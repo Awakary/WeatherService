@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wheather</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div style="text-align-last: center">
+        <h2>Регистрация</h2>
+		{% if errors %}
+			{% if errors[0].detail %}
+				<div style="color: red;">{{ errors[0].detail}}</div>
+			{% else %}
+		<div style="color: red;">{{ errors[0]}}</div>
+		    {% endif %}
+		{% endif %}
+        <div style="text-align-last: center">
+	<form action='/register' method="post">
+		<div>
+			<input class="inputer"
+				   id="login"
+				   maxlength="20"
+				   minlength="2"
+				   name="login" placeholder="Введите логин"
+				   required
+				   type="text"/>
+			<span class="validity"></span>
+		</div>
+		<div>
+
+			<input class="inputer"
+				   id="password"
+				   maxlength="20"
+				   minlength="2"
+				   name="password"
+				   placeholder="Введите пароль"
+				   type="text"/>
+			<span class="validity"></span>
+		</div>
+		<div>
+			<input class="inputer"
+				   id="repeated_password"
+				   maxlength="20"
+				   minlength="2"
+				   name="repeated_password"
+				   placeholder="Повторите пароль"
+				   type="text"/>
+			<span class="validity"></span>
+		</div>
+			<h3> <button  class="reg_button" type="submit">Зарегистрироваться</button></h3>
+	</form>
+
+</div>
+    </div>
+    </body>
+</html>

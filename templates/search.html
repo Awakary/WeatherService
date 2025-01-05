@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wheather</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+</head>
+<body>
+<div style="text-align-last: center">
+   <img  src="/static/images/main.jpg" alt="Image">
+</div>
+    <div style="text-align-last: center">
+        {% if not request.cookies.get('user_access_token') %}
+         <div>
+                <form action='/token' method="post">
+                    <div >
+                        <label for="login"> </label>
+                        <input class="inputer"
+                               id="login"
+                               maxlength="20"
+                               minlength="2"
+                               name="login" placeholder="Введите логин"
+                               required
+                               type="text"/>
+                        <span class="validity"></span>
+                    </div>
+                    <div >
+                        <label for="password"></label>
+                        <input class="inputer"
+                               id="password"
+                               maxlength="20"
+                               minlength="2"
+                               name="password"
+                               placeholder="Введите пароль"
+                               type="text"/>
+                        <span class="validity"></span>
+                    </div>
+                    <h3><button type="submit" class="auth_button">Авторизоваться</button> </h3>
+                </form>
+                <form action='/registration' method="get">
+                    <h3><button class="reg_button">Зарегистрироваться</button></h3>
+                </form>
+            </div>
+             </div>
+
+         {% else %}
+         <div class="row">
+            <form action='/locations' method="get">
+                <input class="inputer"
+                   id="player1_name"
+                   maxlength="20"
+                   minlength="2"
+                   name="city" placeholder="Введите локацию"
+                   required
+                   size="20"
+                   type="text"/>
+                <span class="validity"></span>
+                <button class="back_button" type="submit">Найти</button>
+            </form>
+             <p> Пользователь: {{request.cookies.get('username') }}</p>
+            <form action='/logout' method="post">
+                <button class="out_button">Выйти</button>
+            </form>
+
+         {% endif %}
+    </div>
+    </body>
+</html>

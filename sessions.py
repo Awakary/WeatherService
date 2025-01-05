@@ -1,0 +1,67 @@
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import sessionmaker
+
+from exceptions import UsernameExistsException, SameLocationException
+from models import User, engine, Location
+from pd_models import *
+from pd_models import LocationCheckUser
+
+
+class BaseDao:
+
+    def __init__(self):
+        self.engine = engine
+        self.session_factory = sessionmaker(
+            bind=self.engine, autoflush=False
+        )
+
+
+class UserDao(BaseDao):
+
+    def get_user(self, login):
+        with self.session_factory() as session:
+            user = session.query(User).filter(User.login == login).first()
+        return user
+
+    def save_user(self, login, hashed_password):
+        with self.session_factory() as session:
+            new_user = User(login=login, password=hashed_password)
+            session.add(new_user)
+            try:
+                session.commit()
+            except IntegrityError:
+                raise UsernameExistsException
+            session.refresh(new_user)
+        return new_user
+
+
+class LocationDao(BaseDao):
+
+    def save_location(self, location_for_db: LocationCheckUser):
+        with self.session_factory() as session:
+            new_location_dict = location_for_db.model_dump()
+            new_location = Location(**new_location_dict)
+            session.add(new_location)
+            try:
+                session.commit()
+            except IntegrityError:
+                raise SameLocationException
+            session.refresh(new_location)
+        return new_location
+
+    # def get_location_by_params(self, location_for_db: LocationCheckUser):
+    #     with self.session_factory() as session:
+    #         location = session.query(Location).filter(Location.latitude == location_for_db.latitude,
+    #                                                   Location.longitude == location_for_db.longitude).first()
+    #         return location
+
+    def get_locations_by_user(self, user: UserInDB):
+        with self.session_factory() as session:
+            user_locations = session.query(Location).filter(Location.user_id == user.id).all()
+            return user_locations
+
+    def delete_location_by_id(self, location_id: int):
+        with self.session_factory() as session:
+            session.query(Location).filter(Location.id == location_id).delete()
+            session.commit()
+            return "Удалено"

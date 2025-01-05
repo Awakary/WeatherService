@@ -1,0 +1,23 @@
+
+ {% include "search.html" %}
+    <div style="text-align-last: center">
+        {% if user_locations %}
+            {% for location in user_locations %}
+            <div class="card">
+                <div class="container">
+                    <h2>{{ location.name }}</h2>
+                    <p> {{ location.country }}, {{ location.state }}</p>
+                      <img src="{{ location.main | image_path }}" alt="Image">
+                    <p> {{ location.main }}</p>
+                    <p>  {{ location.temp }} °C</p>
+                    <p> Ощущается как: {{ location.feels_like }} °C</p>
+                    <p> Ветер {{ location.wind_speed }} м/с</p>
+                    <form action='/delete_location' method="post">
+                        <input name="location_id" type="hidden" id="location_id" value="{{location.location_id}}">
+                        <button type="submit">Удалить </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
