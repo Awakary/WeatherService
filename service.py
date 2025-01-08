@@ -6,6 +6,7 @@ import requests
 from pip._internal import locations
 from pydantic import validate_call
 
+from exceptions import OpenWeatherApiException
 from pd_models import LocationCheck, WeatherCheck, UserInDB
 from sessions import LocationDao
 
@@ -22,6 +23,8 @@ class WeatherApiService:
         city = city[0].upper() + city[1:]
         found_locations = requests.get(self.find_locations_url,
                                        params={"q": city, "appid": self.api_key, "limit": 5, "lang": "ru"})
+        if "cod" in found_locations and "message" in found_locations:
+            raise OpenWeatherApiException
 
         deserialized_locations = found_locations.json()
         target_locations = []
@@ -36,11 +39,12 @@ class WeatherApiService:
                 target_locations.append(location)
         return [LocationCheck(**location) for location in target_locations]
 
-    @validate_call
     def get_weather_for_location(self, latitude: Decimal, longitude: Decimal) -> dict:
         weather = requests.get(self.get_weather_url,
                                params={"lat": latitude, "lon": longitude, "appid": self.api_key, "lang": "ru",
                                        "units": "metric"})
+        if "cod" in weather and "message" in weather:
+            raise OpenWeatherApiException
         return weather.json()
 
     def get_user_locations_with_weather(self, user: UserInDB) -> list:

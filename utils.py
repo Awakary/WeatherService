@@ -28,3 +28,9 @@ def image_number(number):
     elif number == 5:
         return '/static/images/city_yellow.png'
 
+
+def get_paginated_locations_and_total_pages(user_locations: list, page: int) -> tuple:
+    total_pages = len(user_locations) // 5 + 1 if len(user_locations) % 5 != 0 else len(user_locations) // 5
+    page = page - 1 if page > total_pages else page
+    paginated_user_locations = user_locations[page * 5 - 5: page * 5] if page != 1 else user_locations[0:5]
+    return paginated_user_locations, total_pages

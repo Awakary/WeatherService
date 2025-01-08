@@ -26,8 +26,8 @@
 /* Контейнер для картинки */
 .card__image {
    width: 100%;   /* устанавливаем ширину */
-  height: 120%;  /* устанавливаем высоту */
-  object-fit: cover;  /* сохраняем пропорции изображения */
+  height: 220px;  /* устанавливаем высоту */
+
 }
 
 .back_button {
@@ -91,6 +91,16 @@
     font-size: 0.9em;
     border: 2px solid #1d60a5;
     width: 190px;
+}
+
+.page_button {
+    background: #5b5b60;
+    border-radius: 10px; /* 5px rounded corners */
+    padding: 0.3em 0.3em;
+    color: #ffffff;
+    font-size: 0.9em;
+    border: 2px solid #5b5b60;
+    width: 50px;
 }
 
 .row {

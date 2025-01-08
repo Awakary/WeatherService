@@ -1,7 +1,7 @@
 import re
 from typing import Annotated
 
-from fastapi import APIRouter, Request, Form, Depends, status, HTTPException
+from fastapi import APIRouter, Request, Form, Depends, status, HTTPException, Query
 from fastapi import Response
 
 from starlette.responses import RedirectResponse
@@ -9,13 +9,12 @@ from starlette.templating import Jinja2Templates
 
 from authorazation.jwt_token import create_jwt_token, get_token
 from authorazation.passwords import get_password_hash, authenticate_user, get_current_user, validate_password_username
-from exceptions import UsernameExistsException, SameLocationException, NotSamePasswordException, \
-    UsernamePasswordException, ExceptionWithMessage
+from exceptions import UsernameExistsException, SameLocationException, ExceptionWithMessage, OpenWeatherApiException
 
 from pd_models import UserInDB, FormData, LocationCheck, LocationCheckUser, FormDataCreate
 from service import WeatherApiService
 from sessions import UserDao, LocationDao
-from utils import image_path, image_number
+from utils import image_path, image_number, get_paginated_locations_and_total_pages
 
 router = APIRouter()
 templates = Jinja2Templates(directory='templates')
@@ -26,35 +25,35 @@ templates.env.filters['image_number'] = image_number
 
 
 @router.get('/')
-def get_main_page(request: Request, response: Response):
-    user_locations = []
+def get_main_page(request: Request, current_page: int = None, page: int = 1):
+    paginated_user_locations = []
     errors = []
+    total_pages = 0
     cookies_error_message = request.cookies.get('error_message')
     if cookies_error_message:
         errors.append(ExceptionWithMessage(status_code=400, detail=cookies_error_message))
     token = get_token(request)
+    current_page = current_page if current_page else page
     if token:
-        try:
-            user_locations = WeatherApiService().get_user_locations_with_weather(get_current_user(token))
-        except Exception:
-            errors.append(ExceptionWithMessage(status_code=500, detail="Ошибка API сервиса"))
+        user_locations = WeatherApiService().get_user_locations_with_weather(get_current_user(token))
+        paginated_user_locations, total_pages = get_paginated_locations_and_total_pages(user_locations, page)
     response = templates.TemplateResponse(name='index.html',
-                                      context={'request': request, 'user_locations': user_locations,
-                                               "errors": errors})
+                                          context={'request': request, 'user_locations': paginated_user_locations,
+                                                   "errors": errors, 'total_pages': total_pages,
+                                                   'current_page': current_page})
     response.delete_cookie(key="error_message")
     return response
 
 
 @router.get('/locations')
-async def get_locations_html(request: Request, city: str = None):
-    errors = locations = []
-    try:
-        locations = WeatherApiService().find_locations_by_name(city=city)
-    except Exception:
-        errors.append(ExceptionWithMessage(status_code=500, detail="Ошибка API сервиса"))
-        raise HTTPException(status_code=400, detail="User not found")
-        # return templates.TemplateResponse(name='error.html',
-        #                                   context={'request': request, "errors": errors})
+async def get_locations_html(request: Request, city: str = None,
+                             current_user: UserInDB = Depends(get_current_user)):
+    errors = []
+    locations = []
+    locations = WeatherApiService().find_locations_by_name(city=city)
+    # raise HTTPException(status_code=400, detail="User not found")
+    # return templates.TemplateResponse(name='error.html',
+    #                                   context={'request': request, "errors": errors})
     response = templates.TemplateResponse(name='locations.html',
                                           context={'request': request, 'locations': locations, "errors": errors})
     response.delete_cookie(key="error_message")
@@ -62,9 +61,10 @@ async def get_locations_html(request: Request, city: str = None):
 
 
 @router.post('/delete_location')
-async def delete_locations(request: Request,  location_id: Annotated[int, Form()]):
+async def delete_locations(request: Request,  location_id: Annotated[int, Form()], current_page:  Annotated[int, Form()]):
     if LocationDao().delete_location_by_id(location_id) == "Удалено":
-        return RedirectResponse('/', status_code=status.HTTP_303_SEE_OTHER)
+        redirect_url = f"/?page={current_page}"
+        return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/registration")
@@ -99,7 +99,6 @@ def login_for_access_token(login: str = Form(...), password: str = Form(...),
         # Если данные о пользователе получены, то мы генерируем JWT токен, а затем записываем его в cookies
         response.set_cookie(key="user_access_token", value=access_token, httponly=True)
         response.set_cookie(key="username", value=user.login, httponly=True)
-        # response.delete_cookie(key="error_message")
         return response
     except HTTPException as e:
         response.set_cookie(key="error_message", value=e.detail, httponly=True)
