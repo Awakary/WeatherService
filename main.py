@@ -11,6 +11,7 @@ from exceptions import OpenWeatherApiException
 from router import router, templates
 
 app = FastAPI()
+
 app.add_middleware(
        CORSMiddleware,
        allow_origins=["*"],
@@ -22,12 +23,6 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(router)
-
-
-@app.exception_handler(Exception)
-async def http_exception_handler(request, exc: Exception):
-    return templates.TemplateResponse(name='error.html',
-                                      context={'request': request, "error": str(exc)})
 
 
 @app.exception_handler(HTTPException)
@@ -48,5 +43,7 @@ def open_weather_api_exception_handler(request: Request, exc: OpenWeatherApiExce
                                       context={'request': request, "error": exc.detail})
 
 
-
-
+@app.exception_handler(Exception)
+async def http_exception_handler(request, exc: Exception):
+    return templates.TemplateResponse(name='error.html',
+                                      context={'request': request, "error": str(exc)})

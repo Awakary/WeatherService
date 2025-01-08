@@ -1,8 +1,6 @@
 import re
 from typing import Annotated
-
-from fastapi import APIRouter, Request, Form, Depends, status, HTTPException, Query
-from fastapi import Response
+from fastapi import APIRouter, Request, Form, Depends, status, HTTPException
 
 from starlette.responses import RedirectResponse
 from starlette.templating import Jinja2Templates
@@ -51,9 +49,6 @@ async def get_locations_html(request: Request, city: str = None,
     errors = []
     locations = []
     locations = WeatherApiService().find_locations_by_name(city=city)
-    # raise HTTPException(status_code=400, detail="User not found")
-    # return templates.TemplateResponse(name='error.html',
-    #                                   context={'request': request, "errors": errors})
     response = templates.TemplateResponse(name='locations.html',
                                           context={'request': request, 'locations': locations, "errors": errors})
     response.delete_cookie(key="error_message")
@@ -111,7 +106,7 @@ def get_user_me(current_user: UserInDB = Depends(get_current_user)) -> UserInDB:
 
 
 @router.post("/add_location")
-def add_location_for_user_in_db(request: Request, data: Annotated[LocationCheck, Form()],
+def add_location_for_user_in_db(data: Annotated[LocationCheck, Form()],
                                 current_user: UserInDB = Depends(get_current_user),
                                 response=RedirectResponse('/', status_code=status.HTTP_303_SEE_OTHER)):
     location_dict = data.model_dump()

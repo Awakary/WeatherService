@@ -1,9 +1,8 @@
 .card {
-    /* Add shadows to create the "card" effect */
     box-shadow: 0 9px 16px 0 rgba(2,2,1,0.5);
     transition: 0.3s;
     border-radius: 50px; /* 5px rounded corners */
-     border: 2px solid #1d60a5;
+    border: 2px solid #1d60a5;
     width: 350px;
     min-height: 300px;
     margin: auto;
@@ -25,18 +24,17 @@
 
 /* Контейнер для картинки */
 .card__image {
-   width: 100%;   /* устанавливаем ширину */
-  height: 220px;  /* устанавливаем высоту */
+    width: 100%;   /* устанавливаем ширину */
+    height: 220px;  /* устанавливаем высоту */
 
 }
 
 .back_button {
     background: #1d60a5;
-    border-radius: 7px; /* 5px rounded corners */
+    border-radius: 7px;
     padding: 0.5em 0.5em;
     color: #ffffff;
     font-size: 1.1em;
-
     text-transform: capitalize;
     border: 1px solid #f1f1f1;
     width: 140px;
@@ -44,7 +42,7 @@
 
 .auth_button {
     background: #67676a;
-    border-radius: 10px; /* 5px rounded corners */
+    border-radius: 10px;
     padding: 0.3em 0.3em;
     color: #ffffff;
     font-size: 0.9em;
@@ -54,7 +52,7 @@
 }
 .reg_button {
     background: #1d60a5;
-    border-radius: 10px; /* 5px rounded corners */
+    border-radius: 10px;
     padding: 0.3em 0.3em;
     color: #ffffff;
     font-size: 0.9em;
@@ -64,7 +62,7 @@
 }
 .main_button {
     background: #d7e5f4;
-    border-radius: 10px; /* 5px rounded corners */
+    border-radius: 10px;
     padding: 0.3em 0.3em;
     color: #1d60a5;
     font-size: 0.9em;
@@ -75,7 +73,7 @@
 
 .del_button {
     background: #e85353;
-    border-radius: 10px; /* 5px rounded corners */
+    border-radius: 10px;
     padding: 0.3em 0.3em;
     color: #ffffff;
     font-size: 0.9em;
@@ -85,7 +83,7 @@
 
 .add_button {
     background: #1d60a5;
-    border-radius: 10px; /* 5px rounded corners */
+    border-radius: 10px;
     padding: 0.3em 0.3em;
     color: #ffffff;
     font-size: 0.9em;
@@ -95,7 +93,7 @@
 
 .page_button {
     background: #5b5b60;
-    border-radius: 10px; /* 5px rounded corners */
+    border-radius: 10px;
     padding: 0.3em 0.3em;
     color: #ffffff;
     font-size: 0.9em;
@@ -115,8 +113,8 @@
 }
 
 .container-buttons {
-  display: flex;
-  justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
 }
 .right {
     display: flex;
@@ -144,13 +142,13 @@
     font-size: 1em;
     margin-top: 20px;
     border: 1px solid #256db5;
-    border-radius: 10px; /* 5px rounded corners */
+    border-radius: 10px;
     width: 170px;
 }
 
 .out_button {
     background: #d6d6da;
-    border-radius: 10px; /* 5px rounded corners */
+    border-radius: 10px;
     padding: 0.3em 0.3em;
     color: #5b5b60;
     font-size: 0.9em;
@@ -163,7 +161,7 @@
 
     .main_button {
     background: #d7e5f4;
-    border-radius: 10px; /* 5px rounded corners */
+    border-radius: 10px;
     padding: 0.3em 0.3em;
     color: #1d60a5;
     font-size: 0.9em;

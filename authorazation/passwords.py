@@ -2,11 +2,11 @@ import re
 from typing import Annotated
 
 from fastapi import HTTPException, Depends, Form
-from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 
 from authorazation.jwt_token import verify_jwt_token, get_token
-from exceptions import ExceptionWithMessage, NotSamePasswordException, UsernamePasswordException
+from exceptions import ExceptionWithMessage, NotSamePasswordException, UsernamePasswordException, \
+    MinLenPasswordException
 from pd_models import UserCheck, UserInDB, FormDataCreate
 from sessions import UserDao
 
@@ -51,9 +51,11 @@ def validate_password_username(data: Annotated[FormDataCreate, Form()], errors: 
     if errors is not None:
         errors = []
     latin_regex = r'^[A-Za-z0-9]+$'
-    if data.password != data.repeated_password:
-        errors.append(NotSamePasswordException())
-    elif (not re.match(latin_regex, data.login) or not re.match(latin_regex, data.password)
-          or not re.match(latin_regex, data.repeated_password)):
+    if (not re.match(latin_regex, data.login) or not re.match(latin_regex, data.password)
+            or not re.match(latin_regex, data.repeated_password)):
         errors.append(UsernamePasswordException())
+    elif data.password != data.repeated_password:
+        errors.append(NotSamePasswordException())
+    elif len(data.password) < 6:
+        errors.append(MinLenPasswordException())
     return errors

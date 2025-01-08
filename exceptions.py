@@ -29,10 +29,19 @@ class SameLocationException(ExceptionWithMessage):
         super().__init__(status_code=400, detail='Location already exists')
 
 
+class NotCityException(ExceptionWithMessage):
+    def __init__(self):
+        super().__init__(status_code=400, detail='Не указан город (параметр city)')
+
+
 class NotSamePasswordException(ExceptionWithMessage):
     def __init__(self):
         super().__init__(status_code=400, detail='Введенные пароли должны быть одинаковыми')
 
+
+class MinLenPasswordException(ExceptionWithMessage):
+    def __init__(self):
+        super().__init__(status_code=400, detail='Длина пароля должна быть не менее 6 символов')
 
 
 

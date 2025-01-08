@@ -1,6 +1,4 @@
-
- {% include "search.html" %}
-
+{% include "search.html" %}
     <div style="text-align-last: center">
            {% if errors %}
 			    <div style="color: red;">{{errors[0].detail}}</div>
@@ -15,8 +13,8 @@
                     <div class="card__image">
                       <img src="{{ location.main | image_path }}" alt="Image">
                     </div>
-                    <p> {{ location.main }}</p>
-                    <p>  {{ location.temp }} °C</p>
+                    <p style="font-weight: bold;"> {{ location.main }}</p>
+                    <p style="font-weight: bold;">  {{ location.temp }} °C</p>
                     <p> Ощущается как: {{ location.feels_like }} °C</p>
                     <p> Ветер {{ location.wind_speed }} м/с</p>
                     <form action='/delete_location' method="post">
@@ -40,7 +38,6 @@
                     {% endfor %}
                      </div>
             </form>
-
         </div>
          </div>
         {% endif %}
