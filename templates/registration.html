@@ -6,14 +6,13 @@
     <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
 </head>
 <body>
+ <form action='/' method="get">
+        <button class="main_button">Главная</button>
+    </form>
     <div style="text-align-last: center">
-        <h2>Регистрация</h2>
+        <h2 style="color: #1d60a5;">Регистрация</h2>
 		{% if errors %}
-			{% if errors[0].detail %}
-				<div style="color: red;">{{ errors[0].detail}}</div>
-			{% else %}
-		<div style="color: red;">{{ errors[0]}}</div>
-		    {% endif %}
+			<div style="color: red;">{{errors[0].detail}}</div>
 		{% endif %}
         <div style="text-align-last: center">
 	<form action='/register' method="post">

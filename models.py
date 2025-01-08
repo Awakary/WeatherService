@@ -39,7 +39,7 @@ class Location(Base):
     state: Mapped[str]
 
     __table_args__ = (
-        UniqueConstraint('name', 'latitude', 'longitude', name='_name_lat_lon_uc'),
+        UniqueConstraint('name', 'latitude', 'longitude', 'user_id', name='name_user_uc'),
     )
 
 

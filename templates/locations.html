@@ -1,17 +1,20 @@
-
 {% include "search.html" %}
-
     <div style="text-align-last: center">
-        <h2>Найденные локации</h2>
+        <h2 style="color: #1d60a5;">Найденные локации</h2>
+        {% if errors %}
+			<div style="color: red;">{{errors[0].detail}}</div>
+		{% endif %}
          {% if not locations %}
              <p>Локации не найдены</p>
          {% endif %}
     </div>
-         {% for location in locations %}
-    <div class="card">
-        <div class="container">
+    <div class="container">
+        {% for location in locations %}
+        <div class="card">
             <h3>{{ location.name }}</h3>
-                <img src="{{loop.index| image_number }}" alt="Image">
+                <div class="card__image">
+                    <img src="{{loop.index| image_number }}" alt="Image">
+                </div>
             <p>Страна: {{ location.country }}</p>
             {% if location.state %}
                 <p>Находится в: {{ location.state }}</p>
@@ -24,8 +27,8 @@
                 <input name="lon" type="hidden" id="lon" value="{{location.lon}}">
                 <input name="country" type="hidden" id="country" value="{{location.country}}">
                 <input name="state" type="hidden" id="state" value="{{location.state}}">
-                <button type="submit">Добавить в сохраненные</button>
+                <button type="submit" class="add_button">Добавить в сохраненные</button>
             </form>
        </div>
+        {% endfor %}
     </div>
-         {% endfor %}

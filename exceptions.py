@@ -17,12 +17,11 @@ class UsernamePasswordException(ExceptionWithMessage):
     def __init__(self):
         super().__init__(status_code=400, detail='Имя пользователя и пароль '
                                                  'должны содержать только латинские буквы и цифры')
-        # self.message = 'Пользователь с таким логином уже существует'
 
 
 class SameLocationException(ExceptionWithMessage):
     def __init__(self):
-        self.message = 'Локация уже добавлена'
+        super().__init__(status_code=400, detail='Location already exists')
 
 
 class NotSamePasswordException(ExceptionWithMessage):

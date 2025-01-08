@@ -4,8 +4,6 @@ from jinja2 import Environment, FileSystemLoader
 def image_path(weather):
     if weather == 'Ясно':
         return '/static/images/sun.png'
-    elif weather == 'Пасмурно':
-        return '/static/images/cloudy.png'
     elif 'нег' in weather:
         return '/static/images/snow.png'
     elif 'Облачно с прояснениями' in weather:
@@ -13,7 +11,9 @@ def image_path(weather):
     elif 'облач' in weather:
         return '/static/images/clouds.png'
     elif 'ождь' in weather:
-        return '/static/images/rain.png'
+        return '/static/images/rain2.png'
+    else:
+        return '/static/images/cloudy.png'
 
 
 def image_number(number):
