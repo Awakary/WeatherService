@@ -5,12 +5,14 @@ from fastapi import HTTPException, Depends, Form
 from passlib.context import CryptContext
 
 from authorazation.jwt_token import verify_jwt_token, get_token
-from exceptions import ExceptionWithMessage, NotSamePasswordException, UsernamePasswordException, \
+from exceptions import NotSamePasswordException, UsernamePasswordException, \
     MinLenPasswordException
 from pd_models import UserCheck, UserInDB, FormDataCreate
 from sessions import UserDao
 
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+user_dao = UserDao()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -22,7 +24,7 @@ def get_password_hash(password: str) -> str:
 
 
 def get_user(login: str):
-    user = UserDao().get_user(login)
+    user = user_dao.get_one(login)
     if user:
         return UserInDB(login=user.login, hashed_password=user.password, id=user.id)
 
@@ -40,7 +42,7 @@ def get_current_user(token: Annotated[str, Depends(get_token)]) -> UserInDB:
     decoded_data = verify_jwt_token(token)
     if not decoded_data:
         raise HTTPException(status_code=400, detail="Invalid token")
-    user = get_user(decoded_data["sub"])
+    user = user_dao.get_one(decoded_data["sub"])
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
     return user

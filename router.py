@@ -1,4 +1,3 @@
-import re
 from typing import Annotated
 from fastapi import APIRouter, Request, Form, Depends, status, HTTPException
 
@@ -11,11 +10,15 @@ from exceptions import UsernameExistsException, SameLocationException, Exception
 
 from pd_models import UserInDB, FormData, LocationCheck, LocationCheckUser, FormDataCreate
 from service import WeatherApiService
-from sessions import UserDao, LocationDao
+from sessions import UserDao, LocationDao, BaseDao
 from utils import image_path, image_number, get_paginated_locations_and_total_pages
 
 router = APIRouter()
 templates = Jinja2Templates(directory='templates')
+weather_service = WeatherApiService()
+user_dao = UserDao()
+location_dao = LocationDao()
+
 
 # Регистрация фильтров
 templates.env.filters['image_path'] = image_path
@@ -33,7 +36,7 @@ def get_main_page(request: Request, current_page: int = None, page: int = 1):
     token = get_token(request)
     current_page = current_page if current_page else page
     if token:
-        user_locations = WeatherApiService().get_user_locations_with_weather(get_current_user(token))
+        user_locations = weather_service.get_user_locations_with_weather(get_current_user(token))
         paginated_user_locations, total_pages = get_paginated_locations_and_total_pages(user_locations, page)
     response = templates.TemplateResponse(name='index.html',
                                           context={'request': request, 'user_locations': paginated_user_locations,
@@ -48,7 +51,7 @@ async def get_locations_html(request: Request, city: str = None,
                              current_user: UserInDB = Depends(get_current_user)):
     errors = []
     locations = []
-    locations = WeatherApiService().find_locations_by_name(city=city)
+    locations = weather_service.find_locations_by_name(city=city)
     response = templates.TemplateResponse(name='locations.html',
                                           context={'request': request, 'locations': locations, "errors": errors})
     response.delete_cookie(key="error_message")
@@ -56,8 +59,8 @@ async def get_locations_html(request: Request, city: str = None,
 
 
 @router.post('/delete_location')
-async def delete_locations(request: Request,  location_id: Annotated[int, Form()], current_page:  Annotated[int, Form()]):
-    if LocationDao().delete_location_by_id(location_id) == "Удалено":
+async def delete_locations(request: Request, location_id: Annotated[int, Form()], current_page: Annotated[int, Form()]):
+    if location_dao.delete_one(location_id) == "Удалено":
         redirect_url = f"/?page={current_page}"
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
@@ -69,12 +72,12 @@ def get_reg_page(request: Request):
 
 
 @router.post("/register")
-def register_user(request: Request,  data: Annotated[FormDataCreate, Form()]
+def register_user(request: Request, data: Annotated[FormDataCreate, Form()]
                   ):
     errors = validate_password_username(data, errors=[])
     hashed_password = get_password_hash(data.password)
     try:
-        new_user = UserDao().save_user(data.login, hashed_password)
+        new_user = user_dao.save_one(data.login, hashed_password)
     except UsernameExistsException as e:
         errors.append(e)
     delattr(data, "repeated_password")
@@ -100,11 +103,6 @@ def login_for_access_token(login: str = Form(...), password: str = Form(...),
         return response
 
 
-@router.get("/users/me")
-def get_user_me(current_user: UserInDB = Depends(get_current_user)) -> UserInDB:
-    return current_user
-
-
 @router.post("/add_location")
 def add_location_for_user_in_db(data: Annotated[LocationCheck, Form()],
                                 current_user: UserInDB = Depends(get_current_user),
@@ -115,7 +113,7 @@ def add_location_for_user_in_db(data: Annotated[LocationCheck, Form()],
     location_for_db = LocationCheckUser(**location_dict,
                                         user_id=current_user.id, latitude=lat, longitude=lon)
     try:
-        LocationDao().save_location(location_for_db)
+        location_dao.save_one(location_for_db)
     except SameLocationException as e:
         response.set_cookie(key="error_message", value=e.detail, httponly=True)
     return response
@@ -126,4 +124,3 @@ async def logout_user(response=RedirectResponse('/', status_code=status.HTTP_303
     response.delete_cookie(key="user_access_token")
     response.delete_cookie(key="username")
     return response
-

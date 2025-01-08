@@ -1,10 +1,9 @@
-
 from fastapi import FastAPI
 from fastapi import Request
 from pydantic import ValidationError
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError, HTTPException
+
+from fastapi.exceptions import HTTPException
 from fastapi.staticfiles import StaticFiles
 
 from exceptions import OpenWeatherApiException
@@ -13,13 +12,12 @@ from router import router, templates
 app = FastAPI()
 
 app.add_middleware(
-       CORSMiddleware,
-       allow_origins=["*"],
-       allow_credentials=True,
-       allow_methods=["*"],
-       allow_headers=["*"],
-   )
-
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(router)

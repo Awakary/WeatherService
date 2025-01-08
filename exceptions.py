@@ -42,6 +42,3 @@ class NotSamePasswordException(ExceptionWithMessage):
 class MinLenPasswordException(ExceptionWithMessage):
     def __init__(self):
         super().__init__(status_code=400, detail='Длина пароля должна быть не менее 6 символов')
-
-
-

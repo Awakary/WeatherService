@@ -54,7 +54,3 @@ class WeatherCheck(BaseModel):
     wind_speed: float
     country: str
     state: str = '-'
-
-
-
-

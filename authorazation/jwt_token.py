@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 import jwt
 from fastapi import Request, HTTPException, status
 
-
 SECRET_KEY = "my_secret_key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = timedelta(minutes=180)

@@ -5,7 +5,10 @@ import requests
 
 from exceptions import OpenWeatherApiException, NotCityException
 from pd_models import LocationCheck, WeatherCheck, UserInDB
+
 from sessions import LocationDao
+
+location_dao = LocationDao()
 
 
 class WeatherApiService:
@@ -49,7 +52,7 @@ class WeatherApiService:
         return weather.json()
 
     def get_user_locations_with_weather(self, user: UserInDB) -> list:
-        user_locations = LocationDao().get_locations_by_user(user)
+        user_locations = location_dao.get_one(user)
         locations_with_weather = []
         for location in user_locations:
             weather_dict = self.get_weather_for_location(latitude=location.latitude,
