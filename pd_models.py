@@ -1,11 +1,6 @@
-import re
 from decimal import Decimal
-from typing import List
 
-import pydantic
-from pydantic import BaseModel, ConfigDict, root_validator, validator, model_validator, ValidationError, constr
-
-from exceptions import UsernamePasswordException
+from pydantic import BaseModel, ConfigDict
 
 
 class UserCheck(BaseModel):
@@ -29,21 +24,8 @@ class FormData(BaseModel):
     password: str
 
 
-
-
-
 class FormDataCreate(FormData):
     repeated_password: str
-
-    # @model_validator(mode='after')
-    # def validate_all_fields(self):
-    #     if (not re.match(latin_regex, self.login) or not re.match(latin_regex, self.password)
-    #             or not re.match(latin_regex, self.repeated_password)):
-    #         raise UsernamePasswordException
-    #     return self
-
-
-
 
 
 class LocationCheck(BaseModel):
@@ -51,7 +33,7 @@ class LocationCheck(BaseModel):
     lat: Decimal
     lon: Decimal
     country: str
-    state: str = None
+    state: str = "-"
 
 
 class LocationCheckUser(BaseModel):
@@ -71,7 +53,7 @@ class WeatherCheck(BaseModel):
     feels_like: int
     wind_speed: float
     country: str
-    state: str = "-"
+    state: str = '-'
 
 
 
