@@ -1,21 +1,28 @@
+import os
 from abc import ABC
+from os import environ
 
+from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
+from config import settings
 from exceptions import UsernameExistsException, SameLocationException
 from models import User, engine, Location
 from pd_models import *
 from pd_models import LocationCheckUser
 
 
-class BaseDao(ABC):
+class BaseDao:
 
     def __init__(self):
         self.engine = engine
         self.session_factory = sessionmaker(
             bind=self.engine, autoflush=False
         )
+
+    # def get_engine(self):
+    #     return create_engine("sqlite:///./test_db.db") if os.environ.get("PYTEST_VERSION") else create_engine(settings.DB_URL)
 
     def get_one(self, *args, **kwargs):
         pass
@@ -36,6 +43,7 @@ class UserDao(BaseDao):
 
     def save_one(self, login, hashed_password):
         with self.session_factory() as session:
+            print(session.bind, 55555)
             new_user = User(login=login, password=hashed_password)
             session.add(new_user)
             try:

@@ -1,3 +1,5 @@
+import os
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,6 +14,8 @@ class Settings(BaseSettings):
 
     @property
     def DB_URL(self):
+        if os.environ.get("PYTEST_VERSION"):
+            return "sqlite:///./test_db.db"
         return f'postgresql+psycopg2://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}'
 
 

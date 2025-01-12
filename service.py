@@ -1,8 +1,10 @@
 from decimal import Decimal
 
+from sqlalchemy import create_engine
 from transliterate import translit
 import requests
 
+from config import settings
 from exceptions import OpenWeatherApiException, NotCityException
 from pd_models import LocationCheck, WeatherCheck, UserInDB
 

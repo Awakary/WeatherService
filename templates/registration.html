@@ -6,7 +6,7 @@
     <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
 </head>
 <body>
- <form action='/' method="get">
+ 	<form action='/' method="get">
         <button class="main_button">Главная</button>
     </form>
     <div style="text-align-last: center">
@@ -34,7 +34,7 @@
 				   minlength="2"
 				   name="password"
 				   placeholder="Введите пароль"
-				   type="text"/>
+				   type="password"/>
 			<span class="validity"></span>
 		</div>
 		<div>
@@ -44,7 +44,7 @@
 				   minlength="2"
 				   name="repeated_password"
 				   placeholder="Повторите пароль"
-				   type="text"/>
+				   type="password"/>
 			<span class="validity"></span>
 		</div>
 			<h3> <button  class="reg_button" type="submit">Зарегистрироваться</button></h3>

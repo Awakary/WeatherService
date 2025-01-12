@@ -1,11 +1,14 @@
+import os
 from typing import Annotated
 from fastapi import APIRouter, Request, Form, Depends, status, HTTPException
+from loguru import logger
 
 from starlette.responses import RedirectResponse
 from starlette.templating import Jinja2Templates
 
 from authorazation.jwt_token import create_jwt_token, get_token
 from authorazation.passwords import get_password_hash, authenticate_user, get_current_user, validate_password_username
+from config import settings
 from exceptions import UsernameExistsException, SameLocationException, ExceptionWithMessage, OpenWeatherApiException
 
 from pd_models import UserInDB, FormData, LocationCheck, LocationCheckUser, FormDataCreate
@@ -16,6 +19,7 @@ from utils import image_path, image_number, get_paginated_locations_and_total_pa
 router = APIRouter()
 templates = Jinja2Templates(directory='templates')
 weather_service = WeatherApiService()
+
 user_dao = UserDao()
 location_dao = LocationDao()
 
@@ -50,7 +54,6 @@ def get_main_page(request: Request, current_page: int = None, page: int = 1):
 async def get_locations_html(request: Request, city: str = None,
                              current_user: UserInDB = Depends(get_current_user)):
     errors = []
-    locations = []
     locations = weather_service.find_locations_by_name(city=city)
     response = templates.TemplateResponse(name='locations.html',
                                           context={'request': request, 'locations': locations, "errors": errors})
@@ -59,8 +62,10 @@ async def get_locations_html(request: Request, city: str = None,
 
 
 @router.post('/delete_location')
-async def delete_locations(request: Request, location_id: Annotated[int, Form()], current_page: Annotated[int, Form()]):
+async def delete_locations(request: Request, location_id: Annotated[int, Form()],
+                           location_name: Annotated[str, Form()], current_page: Annotated[int, Form()]):
     if location_dao.delete_one(location_id) == "Удалено":
+        logger.info(f"Пользователь {request.cookies.get('username')} удалил локацию {location_name}")
         redirect_url = f"/?page={current_page}"
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
@@ -72,12 +77,11 @@ def get_reg_page(request: Request):
 
 
 @router.post("/register")
-def register_user(request: Request, data: Annotated[FormDataCreate, Form()]
-                  ):
+def register_user(request: Request, data: Annotated[FormDataCreate, Form()]):
     errors = validate_password_username(data, errors=[])
     hashed_password = get_password_hash(data.password)
     try:
-        new_user = user_dao.save_one(data.login, hashed_password)
+        user_dao.save_one(data.login, hashed_password)
     except UsernameExistsException as e:
         errors.append(e)
     delattr(data, "repeated_password")
@@ -104,7 +108,7 @@ def login_for_access_token(login: str = Form(...), password: str = Form(...),
 
 
 @router.post("/add_location")
-def add_location_for_user_in_db(data: Annotated[LocationCheck, Form()],
+def add_location_for_user_in_db(request: Request, data: Annotated[LocationCheck, Form()],
                                 current_user: UserInDB = Depends(get_current_user),
                                 response=RedirectResponse('/', status_code=status.HTTP_303_SEE_OTHER)):
     location_dict = data.model_dump()
@@ -114,6 +118,7 @@ def add_location_for_user_in_db(data: Annotated[LocationCheck, Form()],
                                         user_id=current_user.id, latitude=lat, longitude=lon)
     try:
         location_dao.save_one(location_for_db)
+        logger.info(f"Пользователь {request.cookies.get('username')} сохранил локацию {location_dict.get('name')}")
     except SameLocationException as e:
         response.set_cookie(key="error_message", value=e.detail, httponly=True)
     return response

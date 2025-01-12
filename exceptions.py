@@ -19,11 +19,6 @@ class UsernamePasswordException(ExceptionWithMessage):
                                                  'должны содержать только латинские буквы и цифры')
 
 
-class OpenWeatherApiException(ExceptionWithMessage):
-    def __init__(self):
-        super().__init__(status_code=500, detail='Ошибка API OpenWeather')
-
-
 class SameLocationException(ExceptionWithMessage):
     def __init__(self):
         super().__init__(status_code=400, detail='Location already exists')
@@ -42,3 +37,8 @@ class NotSamePasswordException(ExceptionWithMessage):
 class MinLenPasswordException(ExceptionWithMessage):
     def __init__(self):
         super().__init__(status_code=400, detail='Длина пароля должна быть не менее 6 символов')
+
+
+class OpenWeatherApiException(ExceptionWithMessage):
+    def __init__(self):
+        super().__init__(status_code=500, detail='Ошибка API OpenWeather')

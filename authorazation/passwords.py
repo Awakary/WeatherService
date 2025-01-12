@@ -3,8 +3,10 @@ from typing import Annotated
 
 from fastapi import HTTPException, Depends, Form
 from passlib.context import CryptContext
+from sqlalchemy import create_engine
 
 from authorazation.jwt_token import verify_jwt_token, get_token
+from config import settings
 from exceptions import NotSamePasswordException, UsernamePasswordException, \
     MinLenPasswordException
 from pd_models import UserCheck, UserInDB, FormDataCreate
