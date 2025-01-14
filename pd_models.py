@@ -51,6 +51,6 @@ class WeatherCheck(BaseModel):
     main: str
     temp: int
     feels_like: int
-    wind_speed: float
+    wind_speed: int
     country: str
     state: str = '-'

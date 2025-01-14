@@ -1,17 +1,20 @@
 from fastapi import FastAPI
 from fastapi import Request
+from fastapi.security import OAuth2PasswordBearer
 from loguru import logger
 from pydantic import ValidationError
+from starlette import status
 from starlette.middleware.cors import CORSMiddleware
 
 from fastapi.exceptions import HTTPException
 from fastapi.staticfiles import StaticFiles
+from starlette.responses import RedirectResponse
 
 from router import router, templates
-from exceptions import OpenWeatherApiException
-
+from exceptions import OpenWeatherApiException, TokenExpiredException
 
 app = FastAPI()
+
 
 logger.add("app_logs.log", rotation="1 MB")
 
@@ -46,6 +49,15 @@ def open_weather_api_exception_handler(request: Request, exc: OpenWeatherApiExce
     logger.error(f"Запрос: {request.method} {request.url} - ошибка {exc.detail}")
     return templates.TemplateResponse(name='error.html',
                                       context={'request': request, "error": exc.detail})
+
+
+@app.exception_handler(TokenExpiredException)
+def open_weather_api_exception_handler(request: Request, exc: TokenExpiredException):
+    logger.error(f"Запрос: {request.method} {request.url} - ошибка {exc.detail}")
+    response = RedirectResponse('/autorization', status_code=status.HTTP_303_SEE_OTHER)
+    response.set_cookie(key="error_message", value=exc.detail, httponly=True)
+    response.delete_cookie(key="user_access_token")
+    return response
 
 
 @app.exception_handler(Exception)

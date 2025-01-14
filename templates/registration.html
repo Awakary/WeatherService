@@ -12,7 +12,9 @@
     <div style="text-align-last: center">
         <h2 style="color: #1d60a5;">Регистрация</h2>
 		{% if errors %}
-			<div style="color: red;">{{errors[0].detail}}</div>
+		{% for error in errors %}
+			<div style="color: red;">{{loop.index}}. {{error.detail}}</div>
+		{% endfor %}
 		{% endif %}
         <div style="text-align-last: center">
 	<form action='/register' method="post">

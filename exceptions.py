@@ -42,3 +42,8 @@ class MinLenPasswordException(ExceptionWithMessage):
 class OpenWeatherApiException(ExceptionWithMessage):
     def __init__(self):
         super().__init__(status_code=500, detail='Ошибка API OpenWeather')
+
+
+class TokenExpiredException(ExceptionWithMessage):
+    def __init__(self):
+        super().__init__(status_code=401, detail='Token is expired (180 min)')

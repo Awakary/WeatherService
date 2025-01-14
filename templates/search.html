@@ -23,6 +23,9 @@
    <img  src="/static/images/main2.jpg" alt="Image">
 </div>
     <div style="text-align-last: center">
+        {% if error %}
+			<div style="color: red;">{{error}}</div>
+		{% endif %}
         {% if not request.cookies.get('user_access_token') %}
          <div>
                 <form action='/token' method="post">

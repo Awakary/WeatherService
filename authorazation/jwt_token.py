@@ -24,6 +24,8 @@ def verify_jwt_token(token: str):
     try:
         decoded_data = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return decoded_data
+    except jwt.ExpiredSignatureError:
+        return 'Token is expired'
     except jwt.PyJWTError:
         return None
 

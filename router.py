@@ -29,34 +29,43 @@ templates.env.filters['image_path'] = image_path
 templates.env.filters['image_number'] = image_number
 
 
+@router.get('/autorization')
+def get_autorization_page(request: Request):
+    error = request.cookies.get('error_message')
+    response = templates.TemplateResponse(name='search.html',
+                                          context={'request': request, "error": error})
+    response.delete_cookie(key="error_message")
+    return response
+
+
 @router.get('/')
 def get_main_page(request: Request, current_page: int = None, page: int = 1):
     paginated_user_locations = []
-    errors = []
     total_pages = 0
-    cookies_error_message = request.cookies.get('error_message')
-    if cookies_error_message:
-        errors.append(ExceptionWithMessage(status_code=400, detail=cookies_error_message))
-    token = get_token(request)
+    error = request.cookies.get('error_message')
     current_page = current_page if current_page else page
+    token = get_token(request)
     if token:
         user_locations = weather_service.get_user_locations_with_weather(get_current_user(token))
         paginated_user_locations, total_pages = get_paginated_locations_and_total_pages(user_locations, page)
     response = templates.TemplateResponse(name='index.html',
                                           context={'request': request, 'user_locations': paginated_user_locations,
-                                                   "errors": errors, 'total_pages': total_pages,
+                                                   "error": error, 'total_pages': total_pages,
                                                    'current_page': current_page})
     response.delete_cookie(key="error_message")
     return response
 
-
 @router.get('/locations')
 async def get_locations_html(request: Request, city: str = None,
                              current_user: UserInDB = Depends(get_current_user)):
-    errors = []
-    locations = weather_service.find_locations_by_name(city=city)
+    try:
+        locations = weather_service.find_locations_by_name(city=city)
+        error = None
+    except OpenWeatherApiException as e:
+        error = e.detail
+        locations = []
     response = templates.TemplateResponse(name='locations.html',
-                                          context={'request': request, 'locations': locations, "errors": errors})
+                                          context={'request': request, 'locations': locations, "error": error})
     response.delete_cookie(key="error_message")
     return response
 
@@ -86,7 +95,7 @@ def register_user(request: Request, data: Annotated[FormDataCreate, Form()]):
         errors.append(e)
     delattr(data, "repeated_password")
     if not errors:
-        return login_for_access_token(login=data.login, password=data.password)
+        return RedirectResponse('/autorization', status_code=status.HTTP_303_SEE_OTHER)
     return templates.TemplateResponse(name='registration.html',
                                       context={'request': request, "errors": errors})
 

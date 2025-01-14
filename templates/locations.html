@@ -1,8 +1,8 @@
 {% include "search.html" %}
     <div style="text-align-last: center">
         <h2 style="color: #1d60a5;">Найденные локации</h2>
-        {% if errors %}
-			<div style="color: red;">{{errors[0].detail}}</div>
+        {% if error %}
+			<div style="color: red;">{{errors.detail}}</div>
 		{% endif %}
          {% if not locations %}
              <p>Локации не найдены</p>

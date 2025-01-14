@@ -1,9 +1,11 @@
 from decimal import Decimal
 
+from fastapi import Depends
 from sqlalchemy import create_engine
 from transliterate import translit
 import requests
 
+from authorazation.passwords import get_current_user
 from config import settings
 from exceptions import OpenWeatherApiException, NotCityException
 from pd_models import LocationCheck, WeatherCheck, UserInDB
@@ -62,7 +64,7 @@ class WeatherApiService:
             weather_obj = WeatherCheck(main=weather_dict["weather"][0]["description"].capitalize(),
                                        temp=round(weather_dict["main"]["temp"], 0),
                                        feels_like=round(weather_dict["main"]["feels_like"], 0),
-                                       wind_speed=weather_dict["wind"]["speed"],
+                                       wind_speed=round(weather_dict["wind"]["speed"], 0),
                                        name=location.name,
                                        country=location.country,
                                        state=location.state,

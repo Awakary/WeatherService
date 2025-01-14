@@ -1,14 +1,16 @@
 import re
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import HTTPException, Depends, Form
 from passlib.context import CryptContext
 from sqlalchemy import create_engine
+from starlette import status
 
 from authorazation.jwt_token import verify_jwt_token, get_token
 from config import settings
 from exceptions import NotSamePasswordException, UsernamePasswordException, \
-    MinLenPasswordException
+    MinLenPasswordException, TokenExpiredException
 from pd_models import UserCheck, UserInDB, FormDataCreate
 from sessions import UserDao
 
@@ -42,11 +44,13 @@ def authenticate_user(login: str, password: str) -> UserCheck:
 
 def get_current_user(token: Annotated[str, Depends(get_token)]) -> UserInDB:
     decoded_data = verify_jwt_token(token)
+    if decoded_data == 'Token is expired':
+        raise TokenExpiredException
     if not decoded_data:
-        raise HTTPException(status_code=400, detail="Invalid token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Необходимо сначала авторизоваться")
     user = user_dao.get_one(decoded_data["sub"])
     if not user:
-        raise HTTPException(status_code=400, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     return user
 
 
