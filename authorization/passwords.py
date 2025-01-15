@@ -1,18 +1,15 @@
 import re
-from datetime import datetime
 from typing import Annotated
 
 from fastapi import HTTPException, Depends, Form
 from passlib.context import CryptContext
-from sqlalchemy import create_engine
 from starlette import status
 
-from authorazation.jwt_token import verify_jwt_token, get_token
-from config import settings
-from exceptions import NotSamePasswordException, UsernamePasswordException, \
+from authorization.jwt_token import verify_jwt_token, get_token
+from utilites.exceptions import NotSamePasswordException, UsernamePasswordException, \
     MinLenPasswordException, TokenExpiredException
 from pd_models import UserCheck, UserInDB, FormDataCreate
-from sessions import UserDao
+from db.sessions import UserDao
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

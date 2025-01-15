@@ -1,16 +1,12 @@
 from decimal import Decimal
 
-from fastapi import Depends
-from sqlalchemy import create_engine
 from transliterate import translit
 import requests
 
-from authorazation.passwords import get_current_user
-from config import settings
-from exceptions import OpenWeatherApiException, NotCityException
+from utilites.exceptions import OpenWeatherApiException, NotCityException
 from pd_models import LocationCheck, WeatherCheck, UserInDB
 
-from sessions import LocationDao
+from db.sessions import LocationDao
 
 location_dao = LocationDao()
 
@@ -56,7 +52,7 @@ class WeatherApiService:
         return weather.json()
 
     def get_user_locations_with_weather(self, user: UserInDB) -> list:
-        user_locations = location_dao.get_one(user)
+        user_locations = location_dao.get_all(user)
         locations_with_weather = []
         for location in user_locations:
             weather_dict = self.get_weather_for_location(latitude=location.latitude,

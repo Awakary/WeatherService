@@ -1,4 +1,3 @@
-import os
 from typing import Annotated
 from fastapi import APIRouter, Request, Form, Depends, status, HTTPException
 from loguru import logger
@@ -6,15 +5,14 @@ from loguru import logger
 from starlette.responses import RedirectResponse
 from starlette.templating import Jinja2Templates
 
-from authorazation.jwt_token import create_jwt_token, get_token
-from authorazation.passwords import get_password_hash, authenticate_user, get_current_user, validate_password_username
-from config import settings
-from exceptions import UsernameExistsException, SameLocationException, ExceptionWithMessage, OpenWeatherApiException
+from authorization.jwt_token import create_jwt_token, get_token
+from authorization.passwords import get_password_hash, authenticate_user, get_current_user, validate_password_username
+from utilites.exceptions import UsernameExistsException, SameLocationException
 
 from pd_models import UserInDB, FormData, LocationCheck, LocationCheckUser, FormDataCreate
 from service import WeatherApiService
-from sessions import UserDao, LocationDao, BaseDao
-from utils import image_path, image_number, get_paginated_locations_and_total_pages
+from db.sessions import UserDao, LocationDao
+from utilites.utils import image_path, image_number, get_paginated_locations_and_total_pages
 
 router = APIRouter()
 templates = Jinja2Templates(directory='templates')
@@ -29,7 +27,7 @@ templates.env.filters['image_path'] = image_path
 templates.env.filters['image_number'] = image_number
 
 
-@router.get('/autorization')
+@router.get('/authorization')
 def get_autorization_page(request: Request):
     error = request.cookies.get('error_message')
     response = templates.TemplateResponse(name='search.html',
@@ -42,7 +40,6 @@ def get_autorization_page(request: Request):
 def get_main_page(request: Request, current_page: int = None, page: int = 1):
     paginated_user_locations = []
     total_pages = 0
-    error = request.cookies.get('error_message')
     current_page = current_page if current_page else page
     token = get_token(request)
     if token:
@@ -50,22 +47,18 @@ def get_main_page(request: Request, current_page: int = None, page: int = 1):
         paginated_user_locations, total_pages = get_paginated_locations_and_total_pages(user_locations, page)
     response = templates.TemplateResponse(name='index.html',
                                           context={'request': request, 'user_locations': paginated_user_locations,
-                                                   "error": error, 'total_pages': total_pages,
-                                                   'current_page': current_page})
+                                                   "error": request.cookies.get('error_message'),
+                                                   'total_pages': total_pages, 'current_page': current_page})
     response.delete_cookie(key="error_message")
     return response
+
 
 @router.get('/locations')
 async def get_locations_html(request: Request, city: str = None,
                              current_user: UserInDB = Depends(get_current_user)):
-    try:
-        locations = weather_service.find_locations_by_name(city=city)
-        error = None
-    except OpenWeatherApiException as e:
-        error = e.detail
-        locations = []
+    locations = weather_service.find_locations_by_name(city=city)
     response = templates.TemplateResponse(name='locations.html',
-                                          context={'request': request, 'locations': locations, "error": error})
+                                          context={'request': request, 'locations': locations})
     response.delete_cookie(key="error_message")
     return response
 
@@ -81,8 +74,7 @@ async def delete_locations(request: Request, location_id: Annotated[int, Form()]
 
 @router.get("/registration")
 def get_reg_page(request: Request):
-    return templates.TemplateResponse(name='registration.html',
-                                      context={'request': request})
+    return templates.TemplateResponse(name='registration.html', context={'request': request})
 
 
 @router.post("/register")
@@ -95,7 +87,7 @@ def register_user(request: Request, data: Annotated[FormDataCreate, Form()]):
         errors.append(e)
     delattr(data, "repeated_password")
     if not errors:
-        return RedirectResponse('/autorization', status_code=status.HTTP_303_SEE_OTHER)
+        return RedirectResponse('/authorization', status_code=status.HTTP_303_SEE_OTHER)
     return templates.TemplateResponse(name='registration.html',
                                       context={'request': request, "errors": errors})
 

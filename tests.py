@@ -2,11 +2,11 @@ import sqlalchemy
 import pytest
 from sqlalchemy.orm import sessionmaker
 
-from authorazation.passwords import get_password_hash
+from authorization.passwords import get_password_hash
 from config import settings
 from fastapi.testclient import TestClient
 from main import app
-from models import Base, User, Location
+from db.models import Base, User
 from pd_models import FormDataCreate
 
 
@@ -14,8 +14,8 @@ from pd_models import FormDataCreate
 def create_test_db():
     engine = sqlalchemy.create_engine(settings.DB_URL)  # для тестов используется тестовая  БД sqlite:///./test_db.db"
     Base.metadata.create_all(engine)
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    with SessionLocal() as session:
+    session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    with session_local() as session:
         user1 = User(login="user1", password=get_password_hash("qwerty1"))
         session.add(user1)
         session.commit()
@@ -26,7 +26,7 @@ def create_test_db():
 
 
 @pytest.fixture(scope="function")
-def create_autorization():
+def create_authorization():
     client.post("/token", data={"login": "user1", "password": "qwerty1"})
     try:
         yield
@@ -53,6 +53,7 @@ def test_registration(create_test_db):
     assert "Авторизоваться" in response.text
     assert "Зарегистрироваться" in response.text
 
+
 def test_failure_registration(create_test_db):
     response = client.post("/register", data=FormDataCreate(login="usertest1", password="123",
                                                             repeated_password="123").model_dump())
@@ -69,7 +70,7 @@ def test_failure_registration_witn_not_latin_symbols(create_test_db):
     assert "Имя пользователя и пароль должны содержать только латинские буквы и цифры" in response.text
 
 
-def test_autorization(create_test_db):
+def test_authorization(create_test_db):
     response = client.post("/token", data={"login": "user1", "password": "qwerty1"})
     assert response.status_code == 200
     assert "<title>Wheather</title>" in response.text
@@ -82,7 +83,7 @@ def test_autorization(create_test_db):
     assert "Зарегистрироваться" in r.text
 
 
-def test_failure_autorization(create_test_db):
+def test_failure_authorization(create_test_db):
     response = client.post("/token", data={"login": "user2", "password": "1111111"})
     assert response.status_code == 200
     assert "<title>Wheather</title>" in response.text

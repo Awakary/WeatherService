@@ -3,8 +3,8 @@ from abc import ABC
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from exceptions import UsernameExistsException, SameLocationException
-from models import User, engine, Location
+from utilites.exceptions import UsernameExistsException, SameLocationException
+from db.models import User, engine, Location
 from pd_models import LocationCheckUser, UserInDB
 
 
@@ -17,6 +17,9 @@ class BaseDao(ABC):
         )
 
     def get_one(self, *args, **kwargs):
+        pass
+
+    def get_all(self, *args, **kwargs):
         pass
 
     def save_one(self, *args, **kwargs):
@@ -60,7 +63,7 @@ class LocationDao(BaseDao):
             session.refresh(new_location)
         return new_location
 
-    def get_one(self, user: UserInDB):
+    def get_all(self, user: UserInDB):
         with self.session_factory() as session:
             user_locations = session.query(Location).filter(Location.user_id == user.id).all()
             return user_locations
