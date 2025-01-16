@@ -3,6 +3,7 @@ from decimal import Decimal
 from transliterate import translit
 import requests
 
+from config import settings
 from utilites.exceptions import OpenWeatherApiException, NotCityException
 from pd_models import LocationCheck, WeatherCheck, UserInDB
 
@@ -14,7 +15,7 @@ location_dao = LocationDao()
 class WeatherApiService:
 
     def __init__(self):
-        self.api_key = "cdb8661536da243239d3811c4f088703"
+        self.api_key = settings.WEATHER_API_KEY
         self.find_locations_url = "https://api.openweathermap.org/geo/1.0/direct"
         self.get_weather_url = "https://api.openweathermap.org/data/2.5/weather"
 
@@ -49,6 +50,7 @@ class WeatherApiService:
                                        "units": "metric"})
         if "cod" in weather and "message" in weather:
             raise OpenWeatherApiException
+        # print(weather.json())
         return weather.json()
 
     def get_user_locations_with_weather(self, user: UserInDB) -> list:
@@ -66,6 +68,7 @@ class WeatherApiService:
                                        state=location.state,
                                        location_id=location.id)
             locations_with_weather.append(weather_obj)
+        print(locations_with_weather)
         return locations_with_weather
 
 

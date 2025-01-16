@@ -1,0 +1,24 @@
+ [
+   {
+     "name":"São Paulo",
+     "local_names":  {"ru": "Сан-Паулу"},
+     "lat": -23.5506507,
+     "lon": -46.6333824,
+     "country":"BR",
+     "state":"São Paulo"
+   },
+   {
+     "name":"San Paolo",
+     "lat": 38.1278844,
+     "lon": 15.2305908,
+     "country":"IT",
+     "state":"Sicily"
+   },
+   {
+     "name":"Briga Marina",
+     "lat": 38.0732138,
+     "lon": 15.4908513,
+     "country":"IT",
+     "state":"Sicily"
+   }
+ ]

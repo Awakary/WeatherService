@@ -7,7 +7,7 @@ from starlette import status
 
 from authorization.jwt_token import verify_jwt_token, get_token
 from utilites.exceptions import NotSamePasswordException, UsernamePasswordException, \
-    MinLenPasswordException, TokenExpiredException
+    MinLenPasswordException, TokenExpiredException, UsernameExistsException
 from pd_models import UserCheck, UserInDB, FormDataCreate
 from db.sessions import UserDao
 
@@ -63,4 +63,6 @@ def validate_password_username(data: Annotated[FormDataCreate, Form()], errors: 
         errors.append(NotSamePasswordException())
     elif len(data.password) < 6:
         errors.append(MinLenPasswordException())
+    elif user_dao.get_one(data.login):
+        errors.append(UsernameExistsException())
     return errors

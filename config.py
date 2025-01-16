@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     DB_HOST: str
     DB_PORT: int
     DB_NAME: str
+    WEATHER_API_KEY: str
 
     model_config = SettingsConfigDict(env_file=".env")
 

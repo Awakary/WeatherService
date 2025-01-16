@@ -7,7 +7,7 @@
     min-height: 300px;
     margin: auto;
     text-align: center;
-    flex-direction: column; /* Размещаем элементы в колонку */
+    /*flex-direction: column; !* Размещаем элементы в колонку *!*/
 
 }
 

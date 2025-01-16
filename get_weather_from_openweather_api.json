@@ -1,0 +1,47 @@
+{
+  "coord":
+  {"lon": 2.32, "lat": 48.8589},
+  "weather": 
+  [
+    {
+      "id": 804,
+      "main": "Clouds",
+      "description": "пасмурно",
+      "icon": "04d"
+    }
+  ],
+  "base": "stations",
+  "main":
+  {
+    "temp": 4.84,
+    "feels_like": 1.32,
+    "temp_min": 3.52,
+    "temp_max": 5.42,
+    "pressure": 1034,
+    "humidity": 87,
+    "sea_level": 1034,
+    "grnd_level": 1023
+  },
+    "visibility": 10000,
+    "wind":
+    {
+      "speed": 4.63,
+      "deg": 120
+    },
+  "clouds":
+    {
+      "all": 100
+    },
+  "dt": 1737038425,
+  "sys": {
+    "type": 2,
+    "id": 2012208,
+    "country": "FR",
+    "sunrise": 1737013080,
+    "sunset": 1737044554
+  },
+  "timezone": 3600,
+  "id": 6545270,
+  "name": "Palais-Royal",
+  "cod": 200
+}

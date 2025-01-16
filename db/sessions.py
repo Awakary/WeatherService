@@ -41,10 +41,7 @@ class UserDao(BaseDao):
             print(session.bind, 55555)
             new_user = User(login=login, password=hashed_password)
             session.add(new_user)
-            try:
-                session.commit()
-            except IntegrityError:
-                raise UsernameExistsException
+            session.commit()
             session.refresh(new_user)
         return new_user
 
@@ -53,6 +50,7 @@ class LocationDao(BaseDao):
 
     def save_one(self, location_for_db: LocationCheckUser):
         with self.session_factory() as session:
+            print(location_for_db, 123)
             new_location_dict = location_for_db.model_dump()
             new_location = Location(**new_location_dict)
             session.add(new_location)

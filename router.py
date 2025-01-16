@@ -80,16 +80,15 @@ def get_reg_page(request: Request):
 @router.post("/register")
 def register_user(request: Request, data: Annotated[FormDataCreate, Form()]):
     errors = validate_password_username(data, errors=[])
+    if errors:
+        return templates.TemplateResponse(name='registration.html',
+                                          context={'request': request, "errors": errors})
     hashed_password = get_password_hash(data.password)
-    try:
-        user_dao.save_one(data.login, hashed_password)
-    except UsernameExistsException as e:
-        errors.append(e)
+    user_dao.save_one(data.login, hashed_password)
     delattr(data, "repeated_password")
     if not errors:
         return RedirectResponse('/authorization', status_code=status.HTTP_303_SEE_OTHER)
-    return templates.TemplateResponse(name='registration.html',
-                                      context={'request': request, "errors": errors})
+
 
 
 @router.post("/token")

@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 
 
-class ExceptionWithMessage(HTTPException):
+class ExceptionWithMessage(Exception):
     def __init__(self, status_code=400, detail='Ошибка'):
         self.detail = detail
         self.status_code = status_code
