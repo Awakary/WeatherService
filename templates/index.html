@@ -3,10 +3,10 @@
 <!--           {% if error %}-->
 <!--			    <div style="color: red;">{{error.detail}}</div>-->
 <!--		    {% endif %}-->
-        {% if user_locations %}
+        {% if saved_locations %}
          <h2 style="color: #1d60a5;">Сохраненные локации</h2>
             <div class="container">
-                {% for location in user_locations %}
+                {% for location in saved_locations %}
                 <div class="card">
                     <h2>{{ location.name }}</h2>
                     <p> {{ location.country }}, {{ location.state }}</p>

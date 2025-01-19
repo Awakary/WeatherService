@@ -1,4 +1,8 @@
+from typing import Any
+
+from fastapi_cache import Coder
 from jinja2 import Environment, FileSystemLoader
+from starlette.responses import HTMLResponse
 
 
 def image_path(weather):
@@ -29,8 +33,18 @@ def image_number(number):
         return '/static/images/city_yellow.png'
 
 
-def get_paginated_locations_and_total_pages(user_locations: list, page: int) -> tuple:
-    total_pages = len(user_locations) // 5 + 1 if len(user_locations) % 5 != 0 else len(user_locations) // 5
-    page = page - 1 if page > total_pages else page
-    paginated_user_locations = user_locations[page * 5 - 5: page * 5] if page != 1 else user_locations[0:5]
-    return paginated_user_locations, total_pages
+
+class ORHTMLCoder(Coder):
+    @classmethod
+    def encode(cls, value: Any) -> bytes:
+        return value.body
+
+    @classmethod
+    def decode(cls, value: bytes) -> Any:
+        return HTMLResponse(value)
+
+
+def custom_key_builder(*args, **kwargs):
+    # Генерируем ключ на основе позиционных и именованных аргументов
+    key = f"custom_key:{args}:{kwargs}"
+    return key

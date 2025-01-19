@@ -6,14 +6,13 @@ from passlib.context import CryptContext
 from starlette import status
 
 from authorization.jwt_token import verify_jwt_token, get_token
-from utilites.exceptions import NotSamePasswordException, UsernamePasswordException, \
-    MinLenPasswordException, TokenExpiredException, UsernameExistsException
-from pd_models import UserCheck, UserInDB, FormDataCreate
-from db.sessions import UserDao
-
+from depends import get_user_dao
+from utilites.exceptions import (NotSamePasswordException, UsernamePasswordException,
+                                 TokenExpiredException, UsernameExistsException)
+from schemas import UserCheck, UserInDB, FormDataCreate
+from db.sessions import AbstractDao
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-user_dao = UserDao()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -24,14 +23,14 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def get_user(login: str):
-    user = user_dao.get_one(login)
+def get_user(login: str, dao: Annotated[AbstractDao, Depends()]) -> UserInDB:
+    user = dao.get_one(login)
     if user:
         return UserInDB(login=user.login, hashed_password=user.password, id=user.id)
 
 
-def authenticate_user(login: str, password: str) -> UserCheck:
-    user = get_user(login)
+def authenticate_user(login: str, password: str, dao: Annotated[AbstractDao, Depends()]) -> UserCheck:
+    user = get_user(login, dao)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     if not verify_password(password, user.hashed_password):
@@ -39,19 +38,22 @@ def authenticate_user(login: str, password: str) -> UserCheck:
     return user
 
 
-def get_current_user(token: Annotated[str, Depends(get_token)]) -> UserInDB:
+def get_current_user(token: Annotated[str, Depends(get_token)],
+                     dao: Annotated[AbstractDao, Depends(get_user_dao)]) -> UserInDB:
     decoded_data = verify_jwt_token(token)
     if decoded_data == 'Token is expired':
         raise TokenExpiredException
     if not decoded_data:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Необходимо сначала авторизоваться")
-    user = user_dao.get_one(decoded_data["sub"])
+    user = dao.get_one(decoded_data["sub"])
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Пользователь не найден")
     return user
 
 
-def validate_password_username(data: Annotated[FormDataCreate, Form()], errors: list = []) -> list:
+def validate_password_username(data: Annotated[FormDataCreate, Form()],
+                               dao: Annotated[AbstractDao, Depends()],
+                               errors: list = [],) -> list:
     # Регулярное выражение для проверки, что строка содержит только латинские символы и цифры
     if errors is not None:
         errors = []
@@ -61,8 +63,6 @@ def validate_password_username(data: Annotated[FormDataCreate, Form()], errors: 
         errors.append(UsernamePasswordException())
     elif data.password != data.repeated_password:
         errors.append(NotSamePasswordException())
-    elif len(data.password) < 6:
-        errors.append(MinLenPasswordException())
-    elif user_dao.get_one(data.login):
+    elif dao.get_one(data.login):
         errors.append(UsernameExistsException())
     return errors

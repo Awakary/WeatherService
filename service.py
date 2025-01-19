@@ -1,15 +1,15 @@
 from decimal import Decimal
+from typing import Annotated
 
+from fastapi import Depends
 from transliterate import translit
 import requests
 
 from config import settings
 from utilites.exceptions import OpenWeatherApiException, NotCityException
-from pd_models import LocationCheck, WeatherCheck, UserInDB
+from schemas import LocationCheck, WeatherCheck, UserInDB
 
-from db.sessions import LocationDao
-
-location_dao = LocationDao()
+from db.sessions import LocationDao, AbstractDao, UserDao
 
 
 class WeatherApiService:
@@ -50,11 +50,9 @@ class WeatherApiService:
                                        "units": "metric"})
         if "cod" in weather and "message" in weather:
             raise OpenWeatherApiException
-        # print(weather.json())
         return weather.json()
 
-    def get_user_locations_with_weather(self, user: UserInDB) -> list:
-        user_locations = location_dao.get_all(user)
+    def get_user_locations_with_weather(self, user_locations: list) -> list:
         locations_with_weather = []
         for location in user_locations:
             weather_dict = self.get_weather_for_location(latitude=location.latitude,
@@ -68,8 +66,5 @@ class WeatherApiService:
                                        state=location.state,
                                        location_id=location.id)
             locations_with_weather.append(weather_obj)
-        print(locations_with_weather)
         return locations_with_weather
-
-
 

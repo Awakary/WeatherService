@@ -8,3 +8,10 @@ services:
       POSTGRES_PASSWORD: "admin"
     ports:
       - "5433:5432"
+  redis:
+    image: redis:latest
+    container_name: redis
+    environment:
+      REDIS_URL: "redis://127.0.0.1:6379"
+    ports:
+      - "6379:6379"

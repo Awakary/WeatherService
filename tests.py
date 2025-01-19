@@ -1,20 +1,32 @@
 import json
 from decimal import Decimal
+from functools import wraps
+from unittest import mock
 from unittest.mock import patch
 
 import sqlalchemy
 import pytest
+from fastapi import Depends
 from sqlalchemy.orm import sessionmaker
 
 from authorization.passwords import get_password_hash
 from config import settings
 from fastapi.testclient import TestClient
 
-from db.sessions import UserDao
+from db.sessions import UserDao, AbstractDao, LocationDao
+from depends import get_weather_service, get_user_dao, get_location_dao
 from main import app
 from db.models import Base, User, Location
-from pd_models import FormDataCreate, LocationCheck, LocationCheckUser, WeatherCheck
-from router import weather_service, location_dao
+from schemas import FormDataCreate, LocationCheck, WeatherCheck
+
+
+class TestCase:
+    def __init__(self):
+        self.user_dao = get_user_dao()
+        self.location_dao = get_location_dao()
+        self.weather_service = get_weather_service()
+
+
 
 
 @pytest.fixture(scope="module")
@@ -51,7 +63,7 @@ def create_authorization():
 
 
 client = TestClient(app)
-user_dao = UserDao()
+test = TestCase()
 
 
 def test_read_main():
@@ -69,16 +81,7 @@ def test_registration(create_test_db):
     assert "<title>Wheather</title>" in response.text
     assert "Авторизоваться" in response.text
     assert "Зарегистрироваться" in response.text
-    assert user_dao.get_one(login="usertest") is not None
-
-
-def test_failure_registration(create_test_db):
-    response = client.post("/register", data=FormDataCreate(login="usertest1", password="123",
-                                                            repeated_password="123").model_dump())
-    assert response.status_code == 200
-    assert "Регистрация" in response.text
-    assert "Длина пароля должна быть не менее 6 символов" in response.text
-    assert user_dao.get_one(login="usertest1") is None
+    assert test.user_dao.get_one(login="usertest") is not None
 
 
 def test_failure_registration_witn_not_latin_symbols(create_test_db):
@@ -87,7 +90,7 @@ def test_failure_registration_witn_not_latin_symbols(create_test_db):
     assert response.status_code == 200
     assert "Регистрация" in response.text
     assert "Имя пользователя и пароль должны содержать только латинские буквы и цифры" in response.text
-    assert user_dao.get_one(login="пользователь") is None
+    assert test.user_dao.get_one(login="пользователь") is None
 
 
 def test_failure_registration_witn_same_login(create_test_db):
@@ -106,9 +109,9 @@ def test_authorization(create_test_db):
     assert "Найти" in response.text
     assert "Выйти" in response.text
     client.post("/logout")
-    r = client.post("/logout")
-    assert "Авторизоваться" in r.text
-    assert "Зарегистрироваться" in r.text
+    response = client.post("/logout")
+    assert "Авторизоваться" in response.text
+    assert "Зарегистрироваться" in response.text
 
 
 def test_failure_authorization(create_test_db):
@@ -120,8 +123,7 @@ def test_failure_authorization(create_test_db):
     assert "Зарегистрироваться" in response.text
 
 
-def test_logout(create_test_db):
-    client.post("/token", data={"login": "user1", "password": "qwerty1"})
+def test_logout(create_test_db, create_authorization):
     response = client.post("/logout")
     assert response.status_code == 200
     assert "<title>Wheather</title>" in response.text
@@ -137,7 +139,7 @@ def test_find_locations(mock_get):
         mock_get.return_value.json.return_value = json.load(f)
 
     mock_get.return_value.status_code = 200
-    locations = weather_service.find_locations_by_name(city="Сан-Паулу")
+    locations = test.weather_service.find_locations_by_name(city="Сан-Паулу")
 
     # Проверка, что функция вернула ожидаемые Pydantic объекты
     expected_locations = [
@@ -157,7 +159,7 @@ def test_find_locations(mock_get):
     assert locations == expected_locations
 
     # Убедимся, что requests.get был вызван с правильным URL
-    mock_get.assert_called_once_with(weather_service.find_locations_url,
+    mock_get.assert_called_once_with(test.weather_service.find_locations_url,
                                      params={'q': 'Сан-Паулу',
                                              'appid': settings.WEATHER_API_KEY,
                                              'limit': 5, 'lang': 'ru'})
@@ -171,8 +173,11 @@ def test_weather_for_location(mock_get, create_test_db):
         mock_get.return_value.json.return_value = json.load(f)
 
     mock_get.return_value.status_code = 200
-    user = user_dao.get_one(login="user1")
-    location_with_weather = weather_service.get_user_locations_with_weather(user)
+
+    current_user = test.user_dao.get_one(login="user1")
+    user_locations = test.location_dao.get_all(current_user)
+    location_with_weather = test.weather_service.get_user_locations_with_weather(
+        user_locations=user_locations)
 
     expected_location = [
         WeatherCheck(
@@ -188,7 +193,7 @@ def test_weather_for_location(mock_get, create_test_db):
     ]
     assert location_with_weather == expected_location
 
-    mock_get.assert_called_once_with(weather_service.get_weather_url,
+    mock_get.assert_called_once_with(test.weather_service.get_weather_url,
                                      params={"lat": Decimal('48.8588897000'),
                                              "lon": Decimal('2.3200410217'),
                                              "appid": settings.WEATHER_API_KEY,
@@ -196,4 +201,64 @@ def test_weather_for_location(mock_get, create_test_db):
                                              "units": "metric"}
                                      )
 
+@patch('requests.get')
+def test_get_locations_page_without_authorization(mock_get, create_test_db):
+    answer_from_api = "find_locs_from_openweather_api.json"
+    with open(answer_from_api) as f:
+        mock_get.return_value.json.return_value = json.load(f)
+    response = client.get("/locations", params={"city": "Сан-Паулу"})
+    assert "Необходимо сначала авторизоваться" in response.text
+
+
+@patch('requests.get')
+def test_read_main_with_authorization(mock_get, create_test_db, create_authorization):
+    answer_from_api = "get_weather_from_openweather_api.json"
+    with open(answer_from_api) as f:
+        mock_get.return_value.json.return_value = json.load(f)
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "<title>Wheather</title>" in response.text
+    assert "Сохраненные локации" in response.text
+    assert "Париж" in response.text
+    assert "Пользователь: user1" in response.text
+    assert "Выйти" in response.text
+    assert "Pages:" in response.text
+
+
+def test_add_locations_for_user(create_test_db, create_authorization):
+    location = (
+        LocationCheck(
+            name="Сан-Паулу",
+            lat=Decimal("-23.5506507"),
+            lon=Decimal("-46.6333824"),
+            country="BR",
+            state="São Paulo")
+    )
+    response = client.post("/add_location", data=location.model_dump())
+    assert response.status_code == 200
+    assert test.location_dao.get_one(name="Сан-Паулу") is not None
+    assert "<title>Wheather</title>" in response.text
+    assert "Сан-Паулу" in response.text
+    assert "Сохраненные локации" in response.text
+    assert "Пользователь: user1" in response.text
+
+
+def test_add_same_location_for_user(create_test_db, create_authorization):
+    location = LocationCheck(name='Париж', lat=Decimal('48.8588897'), lon=Decimal('2.3200410217200766'), country='FR',
+                      state='Ile-de-France')
+    response = client.post("/add_location", data=location.model_dump())
+    assert response.status_code == 200
+    assert "Location already exists" in response.text
+
+
+def test_delete_locations_for_user(create_test_db, create_authorization):
+    location =  test.location_dao.get_one(name="Париж")
+    response = client.post("/delete_location", data={"location_id": location.id,
+                                                     "location_name": location.name,
+                                                     "current_page": 1})
+    assert response.status_code == 200
+    assert  test.location_dao.get_one(name="Париж") is None
+    assert "Париж" not in response.text
+    assert "Пользователь: user1" in response.text
+    assert "Выйти" in response.text
 

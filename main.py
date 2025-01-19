@@ -5,10 +5,15 @@ from pydantic import ValidationError
 from starlette import status
 from starlette.middleware.cors import CORSMiddleware
 
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 from fastapi.exceptions import HTTPException
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import RedirectResponse
 
+from redis import asyncio as aioredis
+
+from config import settings
 from router import router, templates
 from utilites.exceptions import OpenWeatherApiException, TokenExpiredException
 
@@ -27,6 +32,11 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(router)
+
+@app.on_event("startup")
+async def startup():
+   redis = aioredis.from_url(f"redis://{settings.DB_HOST}", encoding="utf8", decode_responses=True)
+   FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
 
 
 @app.exception_handler(HTTPException)
@@ -59,8 +69,8 @@ def open_weather_api_exception_handler(request: Request, exc: TokenExpiredExcept
     return response
 
 
-@app.exception_handler(Exception)
-async def http_exception_handler(request, exc: Exception):
-    logger.error(f"Запрос: {request.method} {request.url} - ошибка {str(exc)}")
-    return templates.TemplateResponse(name='error.html',
-                                      context={'request': request, "error": str(exc)})
+# @app.exception_handler(Exception)
+# async def http_exception_handler(request, exc: Exception):
+#     logger.error(f"Запрос: {request.method} {request.url} - ошибка {str(exc)}")
+#     return templates.TemplateResponse(name='error.html',
+#                                       context={'request': request, "error": str(exc)})

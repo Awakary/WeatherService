@@ -1,58 +1,73 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
+from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from utilites.exceptions import UsernameExistsException, SameLocationException
-from db.models import User, engine, Location
-from pd_models import LocationCheckUser, UserInDB
+from config import settings
+from utilites.exceptions import SameLocationException
+from db.models import User, Location
+from schemas import LocationCheckUser, UserInDB
 
 
-class BaseDao(ABC):
+class AbstractDao(ABC):
 
-    def __init__(self):
-        self.engine = engine
-        self.session_factory = sessionmaker(
+    def __init__(self, model):
+        self.engine = create_engine(
+            url=settings.DB_URL,
+            echo=False
+        )
+        self._session_factory = sessionmaker(
             bind=self.engine, autoflush=False
         )
+        self._model = model
 
     def get_one(self, *args, **kwargs):
-        pass
+        ...
 
     def get_all(self, *args, **kwargs):
-        pass
+        ...
 
     def save_one(self, *args, **kwargs):
-        pass
+        ...
 
     def delete_one(self, *args, **kwargs):
-        pass
+        ...
 
 
-class UserDao(BaseDao):
+class UserDao(AbstractDao):
 
     def get_one(self, login):
-        with self.session_factory() as session:
-            user = session.query(User).filter(User.login == login).first()
+        with self._session_factory() as session:
+            user = session.query(self._model).filter(self._model.login == login).first()
         return user
 
     def save_one(self, login, hashed_password):
-        with self.session_factory() as session:
+        with self._session_factory() as session:
             print(session.bind, 55555)
-            new_user = User(login=login, password=hashed_password)
+            new_user = self._model(login=login, password=hashed_password)
             session.add(new_user)
             session.commit()
             session.refresh(new_user)
         return new_user
 
 
-class LocationDao(BaseDao):
+class LocationDao(AbstractDao):
+
+    def get_one(self, name):
+        with self._session_factory() as session:
+            location = session.query(self._model).filter(self._model.name == name).first()
+        return location
+
+    def get_all(self, user: UserInDB):
+        with self._session_factory() as session:
+            user_locations = session.query(self._model).filter(self._model.user_id == user.id).all()
+            return user_locations
 
     def save_one(self, location_for_db: LocationCheckUser):
-        with self.session_factory() as session:
-            print(location_for_db, 123)
+        with self._session_factory() as session:
             new_location_dict = location_for_db.model_dump()
-            new_location = Location(**new_location_dict)
+            new_location = self._model(**new_location_dict)
             session.add(new_location)
             try:
                 session.commit()
@@ -61,13 +76,22 @@ class LocationDao(BaseDao):
             session.refresh(new_location)
         return new_location
 
-    def get_all(self, user: UserInDB):
-        with self.session_factory() as session:
-            user_locations = session.query(Location).filter(Location.user_id == user.id).all()
-            return user_locations
-
     def delete_one(self, location_id: int):
-        with self.session_factory() as session:
-            session.query(Location).filter(Location.id == location_id).delete()
+        with self._session_factory() as session:
+            session.query(self._model).filter(self._model.id == location_id).delete()
             session.commit()
             return "Удалено"
+
+
+# class CommonDao:
+#     def __init__(self, engine):
+#         self.user = UserDao(engine, User)
+#         self.location = LocationDao(engine, Location)
+#
+#
+# def get_dao():
+#     engine = create_engine(
+#         url=settings.DB_URL,
+#         echo=False
+#     )
+#     return CommonDao(engine=engine)

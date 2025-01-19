@@ -1,12 +1,9 @@
 # Создание и верификация JWT
-#
-# Используйте библиотеку pyjwt для создания и верификации JWT.
-# Сгенерируйте секретный ключ и установите срок действия токена.
 
 from datetime import datetime, timedelta
 
 import jwt
-from fastapi import Request, HTTPException, status
+from fastapi import Request
 
 SECRET_KEY = "my_secret_key"
 ALGORITHM = "HS256"
@@ -32,7 +29,4 @@ def verify_jwt_token(token: str):
 
 def get_token(request: Request):
     # достать значение ключа users_access_token из куки
-    token = request.cookies.get('user_access_token')
-    # if not token:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Token not found')
-    return token
+    return request.cookies.get('user_access_token')
