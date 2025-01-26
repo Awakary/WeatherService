@@ -14,7 +14,8 @@ from starlette.responses import RedirectResponse
 from redis import asyncio as aioredis
 
 from config import settings
-from router import router, templates
+from locations.router import location_router, templates
+from users.router import user_router
 from utilites.exceptions import OpenWeatherApiException, TokenExpiredException
 
 app = FastAPI()
@@ -31,11 +32,14 @@ app.add_middleware(
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.include_router(router)
+
+app.include_router(user_router)
+app.include_router(location_router)
+
 
 @app.on_event("startup")
 async def startup():
-   redis = aioredis.from_url(f"redis://{settings.DB_HOST}", encoding="utf8", decode_responses=True)
+   redis = aioredis.from_url(f"redis://{settings.POSTGRES_HOST}", encoding="utf8", decode_responses=True)
    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
 
 

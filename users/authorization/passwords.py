@@ -5,11 +5,11 @@ from fastapi import HTTPException, Depends, Form
 from passlib.context import CryptContext
 from starlette import status
 
-from authorization.jwt_token import verify_jwt_token, get_token
-from depends import get_user_dao
+from users.authorization.jwt_token import verify_jwt_token, get_token
+from utilites.depends import get_user_dao
 from utilites.exceptions import (NotSamePasswordException, UsernamePasswordException,
                                  TokenExpiredException, UsernameExistsException)
-from schemas import UserCheck, UserInDB, FormDataCreate
+from users.schemas import UserCheck, UserInDB, FormDataCreate
 from db.sessions import AbstractDao
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

@@ -1,23 +1,19 @@
 import json
 from decimal import Decimal
-from functools import wraps
-from unittest import mock
 from unittest.mock import patch
 
 import sqlalchemy
 import pytest
-from fastapi import Depends
 from sqlalchemy.orm import sessionmaker
 
-from authorization.passwords import get_password_hash
+from main import app
+from users.authorization.passwords import get_password_hash
 from config import settings
 from fastapi.testclient import TestClient
 
-from db.sessions import UserDao, AbstractDao, LocationDao
-from depends import get_weather_service, get_user_dao, get_location_dao
-from main import app
+from utilites.depends import get_weather_service, get_user_dao, get_location_dao
 from db.models import Base, User, Location
-from schemas import FormDataCreate, LocationCheck, WeatherCheck
+from users.schemas import FormDataCreate, LocationCheck, WeatherCheck
 
 
 class TestCase:
@@ -25,8 +21,6 @@ class TestCase:
         self.user_dao = get_user_dao()
         self.location_dao = get_location_dao()
         self.weather_service = get_weather_service()
-
-
 
 
 @pytest.fixture(scope="module")
@@ -94,7 +88,7 @@ def test_failure_registration_witn_not_latin_symbols(create_test_db):
 
 
 def test_failure_registration_witn_same_login(create_test_db):
-    response = client.post("/register", data=FormDataCreate(login="usertest", password="123456",
+    response = client.post("/register", data=FormDataCreate(login="user1", password="123456",
                                                             repeated_password="123456").model_dump())
     assert response.status_code == 200
     assert "Регистрация" in response.text
@@ -134,7 +128,7 @@ def test_logout(create_test_db, create_authorization):
 @patch('requests.get')
 def test_find_locations(mock_get):
     # Определяем значение, которое будет возвращаться от апи
-    answer_from_api = "find_locs_from_openweather_api.json"
+    answer_from_api = "fixtures/find_locs_from_openweather_api.json"
     with open(answer_from_api) as f:
         mock_get.return_value.json.return_value = json.load(f)
 
@@ -168,7 +162,7 @@ def test_find_locations(mock_get):
 @patch('requests.get')
 def test_weather_for_location(mock_get, create_test_db):
 
-    answer_from_api = "get_weather_from_openweather_api.json"
+    answer_from_api = "fixtures/get_weather_from_openweather_api.json"
     with open(answer_from_api) as f:
         mock_get.return_value.json.return_value = json.load(f)
 
@@ -201,9 +195,10 @@ def test_weather_for_location(mock_get, create_test_db):
                                              "units": "metric"}
                                      )
 
+
 @patch('requests.get')
 def test_get_locations_page_without_authorization(mock_get, create_test_db):
-    answer_from_api = "find_locs_from_openweather_api.json"
+    answer_from_api = "fixtures/find_locs_from_openweather_api.json"
     with open(answer_from_api) as f:
         mock_get.return_value.json.return_value = json.load(f)
     response = client.get("/locations", params={"city": "Сан-Паулу"})
@@ -212,7 +207,7 @@ def test_get_locations_page_without_authorization(mock_get, create_test_db):
 
 @patch('requests.get')
 def test_read_main_with_authorization(mock_get, create_test_db, create_authorization):
-    answer_from_api = "get_weather_from_openweather_api.json"
+    answer_from_api = "fixtures/get_weather_from_openweather_api.json"
     with open(answer_from_api) as f:
         mock_get.return_value.json.return_value = json.load(f)
     response = client.get("/")

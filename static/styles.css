@@ -32,14 +32,18 @@
 .back_button {
     background: #1d60a5;
     border-radius: 7px;
-    padding: 0.5em 0.5em;
+    padding: 0.45em 0.45em;
     color: #ffffff;
     font-size: 1.1em;
     text-transform: capitalize;
     border: 1px solid #f1f1f1;
     width: 140px;
 }
-
+.back_button:hover {
+    background-color: #d7e5f4; /* Цвет фона при наведении */
+    border: 2px solid #1d60a5;
+    color: #184a7e;
+}
 .auth_button {
     background: #67676a;
     border-radius: 10px;
@@ -49,6 +53,11 @@
     text-transform: capitalize;
     border: 2px solid #5b5b60;
     width: 220px;
+}
+.auth_button:hover {
+    background-color: #d6d6da; /* Цвет фона при наведении */
+    border: 2px solid #5b5b60;
+    color: #5b5b60;
 }
 .reg_button {
     background: #1d60a5;
@@ -60,6 +69,11 @@
     border: 2px solid #1b5188;
     width: 220px;
 }
+.reg_button:hover {
+    background-color: #d6d6da; /* Цвет фона при наведении */
+    border: 2px solid #1d60a5;
+    color: #1d60a5;
+}
 .main_button {
     background: #d7e5f4;
     border-radius: 10px;
@@ -70,17 +84,12 @@
     border: 2px solid #1d60a5;
     width: 150px;
 }
-
-.del_button {
-    background: #e85353;
-    border-radius: 10px;
-    padding: 0.3em 0.3em;
-    color: #ffffff;
-    font-size: 0.9em;
-    border: 2px solid #b8090f;
-    width: 190px;
+.main_button:hover {
+    background-color: #1d60a5; /* Цвет фона при наведении */
+    border: 2px solid #1d60a5;
+    color: #d6d6da;
+    font-weight: bold;
 }
-
 .add_button {
     background: #1d60a5;
     border-radius: 10px;
@@ -90,7 +99,11 @@
     border: 2px solid #1d60a5;
     width: 190px;
 }
-
+.add_button:hover {
+    background-color: #d6d6da; /* Цвет фона при наведении */
+    border: 2px solid #1d60a5;
+    color: #134578;
+}
 .page_button {
     background: #5b5b60;
     border-radius: 10px;
@@ -134,8 +147,21 @@
     height: auto; /* сохраняем пропорции */
 
 }
-
 .inputer {
+    background: #ffffff;
+    padding: 0.5em 1.5em;
+    color: #000000;
+    font-size: 1em;
+    margin-top: 20px;
+    border: 1px solid #256db5;
+    border-radius: 10px;
+    width: 170px;
+}
+.inputer:hover {
+     transform: scale(1.05);
+}
+
+.inputer_main {
     background: #ffffff;
     padding: 0.5em 1.5em;
     color: #000000;
@@ -156,10 +182,14 @@
     text-transform: capitalize;
     border: 2px solid #5b5b60;
     width: 150px;
-
 }
-
-    .main_button {
+.out_button:hover {
+    background-color: #5b5b60; /* Цвет фона при наведении */
+    border: 2px solid #5b5b60;
+    color: #d6d6da;
+    font-weight: bold;
+}
+.main_button {
     background: #d7e5f4;
     border-radius: 10px;
     padding: 0.3em 0.3em;

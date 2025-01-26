@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
@@ -6,8 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 from config import settings
 from utilites.exceptions import SameLocationException
-from db.models import User, Location
-from schemas import LocationCheckUser, UserInDB
+from users.schemas import LocationCheckUser, UserInDB
 
 
 class AbstractDao(ABC):
@@ -82,16 +81,3 @@ class LocationDao(AbstractDao):
             session.commit()
             return "Удалено"
 
-
-# class CommonDao:
-#     def __init__(self, engine):
-#         self.user = UserDao(engine, User)
-#         self.location = LocationDao(engine, Location)
-#
-#
-# def get_dao():
-#     engine = create_engine(
-#         url=settings.DB_URL,
-#         echo=False
-#     )
-#     return CommonDao(engine=engine)

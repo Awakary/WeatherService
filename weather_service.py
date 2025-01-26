@@ -1,15 +1,11 @@
 from decimal import Decimal
-from typing import Annotated
 
-from fastapi import Depends
 from transliterate import translit
 import requests
 
 from config import settings
 from utilites.exceptions import OpenWeatherApiException, NotCityException
-from schemas import LocationCheck, WeatherCheck, UserInDB
-
-from db.sessions import LocationDao, AbstractDao, UserDao
+from users.schemas import LocationCheck, WeatherCheck
 
 
 class WeatherApiService:
