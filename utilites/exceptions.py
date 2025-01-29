@@ -10,7 +10,6 @@ class ExceptionWithMessage(HTTPException):
 class UsernameExistsException(ExceptionWithMessage):
     def __init__(self):
         super().__init__(status_code=400, detail='Пользователь с таким логином уже существует')
-        # self.message = 'Пользователь с таким логином уже существует'
 
 
 class UsernamePasswordException(ExceptionWithMessage):

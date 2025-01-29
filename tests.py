@@ -1,4 +1,5 @@
 import json
+import os
 from decimal import Decimal
 from unittest.mock import patch
 
@@ -45,6 +46,10 @@ def create_test_db():
         yield
     finally:
         Base.metadata.drop_all(engine)
+        try:
+            os.remove('test_db.db')
+        except Exception as e:
+            print(f"Произошла ошибка удаления тестовой БД: {e}")
 
 
 @pytest.fixture(scope="function")
@@ -161,7 +166,6 @@ def test_find_locations(mock_get):
 
 @patch('requests.get')
 def test_weather_for_location(mock_get, create_test_db):
-
     answer_from_api = "fixtures/get_weather_from_openweather_api.json"
     with open(answer_from_api) as f:
         mock_get.return_value.json.return_value = json.load(f)
@@ -240,20 +244,19 @@ def test_add_locations_for_user(create_test_db, create_authorization):
 
 def test_add_same_location_for_user(create_test_db, create_authorization):
     location = LocationCheck(name='Париж', lat=Decimal('48.8588897'), lon=Decimal('2.3200410217200766'), country='FR',
-                      state='Ile-de-France')
+                             state='Ile-de-France')
     response = client.post("/add_location", data=location.model_dump())
     assert response.status_code == 200
     assert "Location already exists" in response.text
 
 
 def test_delete_locations_for_user(create_test_db, create_authorization):
-    location =  test.location_dao.get_one(name="Париж")
+    location = test.location_dao.get_one(name="Париж")
     response = client.post("/delete_location", data={"location_id": location.id,
                                                      "location_name": location.name,
                                                      "current_page": 1})
     assert response.status_code == 200
-    assert  test.location_dao.get_one(name="Париж") is None
+    assert test.location_dao.get_one(name="Париж") is None
     assert "Париж" not in response.text
     assert "Пользователь: user1" in response.text
     assert "Выйти" in response.text
-

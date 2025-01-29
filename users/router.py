@@ -1,25 +1,16 @@
 from typing import Annotated
 from fastapi import APIRouter, Request, Form, Depends, status, HTTPException
 
-
 from starlette.responses import RedirectResponse
-from starlette.templating import Jinja2Templates
 
+from templates.create_jinja import templates
 from users.authorization.jwt_token import create_jwt_token
 from users.authorization.passwords import get_password_hash, authenticate_user, validate_password_username
 from db.sessions import AbstractDao
 from utilites.depends import get_user_dao
-
 from users.schemas import FormData, FormDataCreate
-from utilites.utils import image_path, image_number
 
 user_router = APIRouter()
-templates = Jinja2Templates(directory='templates')
-
-
-# Регистрация фильтров
-templates.env.filters['image_path'] = image_path
-templates.env.filters['image_number'] = image_number
 
 
 @user_router.get('/authorization')

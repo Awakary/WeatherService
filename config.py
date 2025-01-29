@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_HOST: str
     POSTGRES_PORT: int
+    PAGE_SIZE: int
     WEATHER_API_KEY: str
     REDIS_PASSWORD: str
 
@@ -19,7 +20,8 @@ class Settings(BaseSettings):
     def DB_URL(self):
         if os.environ.get("PYTEST_VERSION"):
             return "sqlite:///./test_db.db"
-        return f'postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}'
+        return (f'postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:'
+                f'{self.POSTGRES_PORT}/{self.POSTGRES_DB}')
 
 
 settings = Settings()

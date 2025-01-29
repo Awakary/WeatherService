@@ -8,11 +8,10 @@ from config import settings
 
 intpk = Annotated[int, mapped_column(primary_key=True, autoincrement=True)]
 
-
 engine = create_engine(
-            url=settings.DB_URL,
-            echo=False
-        )
+    url=settings.DB_URL,
+    echo=False
+)
 
 
 class Base(DeclarativeBase):

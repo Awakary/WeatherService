@@ -1,11 +1,10 @@
 from typing import Any
 
 from fastapi_cache import Coder
-from jinja2 import Environment, FileSystemLoader
 from starlette.responses import HTMLResponse
 
 
-def image_path(weather):
+def image_path(weather) -> str:
     if weather == 'Ясно':
         return '/static/images/sun.png'
     elif 'нег' in weather:
@@ -20,18 +19,18 @@ def image_path(weather):
         return '/static/images/cloudy.png'
 
 
-def image_number(number):
-    if number == 1:
-        return '/static/images/city.png'
-    elif number == 2:
-        return '/static/images/city_red.png'
-    elif number == 3:
-        return '/static/images/city_green.png'
-    elif number == 4:
-        return '/static/images/city_blue.png'
-    elif number == 5:
-        return '/static/images/city_yellow.png'
-
+def image_number(number) -> str:
+    match number:
+        case 1:
+            return '/static/images/city.png'
+        case 2:
+            return '/static/images/city_red.png'
+        case 3:
+            return '/static/images/city_green.png'
+        case 4:
+            return '/static/images/city_blue.png'
+        case 5:
+            return '/static/images/city_yellow.png'
 
 
 class ORHTMLCoder(Coder):
@@ -44,7 +43,7 @@ class ORHTMLCoder(Coder):
         return HTMLResponse(value)
 
 
-def custom_key_builder(*args, **kwargs):
+def custom_key_builder(*args, **kwargs) -> str:
     # Генерируем ключ на основе позиционных и именованных аргументов
     key = f"custom_key:{args}:{kwargs}"
     return key

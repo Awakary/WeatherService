@@ -1,45 +1,39 @@
 from typing import Annotated
-from fastapi import APIRouter, Request, Form, Depends, status, HTTPException
+from fastapi import APIRouter, Request, Form, Depends, status
 from fastapi_cache.decorator import cache
 from loguru import logger
 
-from starlette.responses import RedirectResponse
-from starlette.templating import Jinja2Templates
+from starlette.responses import RedirectResponse, HTMLResponse
 
+from db.two_dao_shema import TwoDaoHelper
+from templates.create_jinja import templates
 from users.authorization.jwt_token import get_token
 from users.authorization.passwords import get_current_user
 from db.sessions import AbstractDao
-from utilites.depends import get_weather_service, get_user_dao, get_location_dao, get_location_service
+from utilites.depends import get_weather_service, get_location_dao, get_location_service, get_two_dao
 from locations.location_service import LocationService
 from utilites.exceptions import SameLocationException
-
-from users.schemas import UserInDB, LocationCheck
+from fastapi_pagination import Page
+from users.schemas import UserInDB, LocationCheck, WeatherCheck
 from weather_service import WeatherApiService
-from utilites.utils import image_path, image_number, ORHTMLCoder, custom_key_builder
+from utilites.utils import ORHTMLCoder, custom_key_builder
+
 
 location_router = APIRouter()
-templates = Jinja2Templates(directory='templates')
 
 
-# Регистрация фильтров
-templates.env.filters['image_path'] = image_path
-templates.env.filters['image_number'] = image_number
-
-
-@location_router.get('/')
-def get_main_page(request: Request, current_page: int = None, page: int = 1,
-                  user_dao: AbstractDao = Depends(get_user_dao),
-                  loc_dao: AbstractDao = Depends(get_location_dao),
+@location_router.get('/', response_model=Page[WeatherCheck], response_class=HTMLResponse)
+def get_main_page(request: Request, current_page: int = None,  page: int = 1,
+                  two_dao: TwoDaoHelper = Depends(get_two_dao),
                   weather_service: WeatherApiService = Depends(get_weather_service),
                   location_service: LocationService = Depends(get_location_service)):
-    token = get_token(request)
-    data = location_service.get_result_locations(page, token, user_dao, loc_dao,
-                                                 weather_service, current_page)
+    current_page = current_page if current_page else page
+    paginated_user_locations = location_service.get_result_locations(page, get_token(request),
+                                                                     two_dao, weather_service)
     response = templates.TemplateResponse(name='index.html',
-                                          context={'request': request, 'current_page': data['current_page'],
-                                                   'saved_locations': data['paginated_user_locations'],
-                                                   "error": request.cookies.get('error_message'),
-                                                   'total_pages': data['total_pages']})
+                                          context={'request': request, 'current_page': current_page,
+                                                   'saved_locations': paginated_user_locations,
+                                                   "error": request.cookies.get('error_message')})
     response.delete_cookie(key="error_message")
     return response
 
@@ -61,7 +55,7 @@ async def delete_locations(request: Request, location_id: Annotated[int, Form()]
                            dao: AbstractDao = Depends(get_location_dao)):
     if dao.delete_one(location_id) == "Удалено":
         logger.info(f"Пользователь {request.cookies.get('username')} удалил локацию {location_name}")
-        redirect_url = f"/?page={current_page}"
+        redirect_url = f"/?current_page={current_page}"
         return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
@@ -78,4 +72,3 @@ def add_location_for_user_in_db(request: Request, data: Annotated[LocationCheck,
     except SameLocationException as e:
         response.set_cookie(key="error_message", value=e.detail, httponly=True)
     return response
-

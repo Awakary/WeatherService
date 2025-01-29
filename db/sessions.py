@@ -1,10 +1,12 @@
 from abc import ABC
+from typing import Any
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Row
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 from config import settings
+from db.models import Location, User
 from utilites.exceptions import SameLocationException
 from users.schemas import LocationCheckUser, UserInDB
 
@@ -36,14 +38,13 @@ class AbstractDao(ABC):
 
 class UserDao(AbstractDao):
 
-    def get_one(self, login):
+    def get_one(self, login: str) -> Row[tuple[User]] | None:
         with self._session_factory() as session:
             user = session.query(self._model).filter(self._model.login == login).first()
         return user
 
-    def save_one(self, login, hashed_password):
+    def save_one(self, login: str, hashed_password: str) -> Row[tuple[User]] | None:
         with self._session_factory() as session:
-            print(session.bind, 55555)
             new_user = self._model(login=login, password=hashed_password)
             session.add(new_user)
             session.commit()
@@ -53,17 +54,17 @@ class UserDao(AbstractDao):
 
 class LocationDao(AbstractDao):
 
-    def get_one(self, name):
+    def get_one(self, name: str) -> Row[tuple[Location]] | None:
         with self._session_factory() as session:
             location = session.query(self._model).filter(self._model.name == name).first()
         return location
 
-    def get_all(self, user: UserInDB):
+    def get_all(self, user: UserInDB) -> list:
         with self._session_factory() as session:
             user_locations = session.query(self._model).filter(self._model.user_id == user.id).all()
             return user_locations
 
-    def save_one(self, location_for_db: LocationCheckUser):
+    def save_one(self, location_for_db: LocationCheckUser) -> LocationCheckUser:
         with self._session_factory() as session:
             new_location_dict = location_for_db.model_dump()
             new_location = self._model(**new_location_dict)
@@ -75,9 +76,8 @@ class LocationDao(AbstractDao):
             session.refresh(new_location)
         return new_location
 
-    def delete_one(self, location_id: int):
+    def delete_one(self, location_id: int) -> str:
         with self._session_factory() as session:
             session.query(self._model).filter(self._model.id == location_id).delete()
             session.commit()
             return "Удалено"
-

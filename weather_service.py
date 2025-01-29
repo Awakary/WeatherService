@@ -63,4 +63,3 @@ class WeatherApiService:
                                        location_id=location.id)
             locations_with_weather.append(weather_obj)
         return locations_with_weather
-

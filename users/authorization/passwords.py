@@ -53,7 +53,7 @@ def get_current_user(token: Annotated[str, Depends(get_token)],
 
 def validate_password_username(data: Annotated[FormDataCreate, Form()],
                                dao: Annotated[AbstractDao, Depends()],
-                               errors: list = [],) -> list:
+                               errors: list = []) -> list:
     # Регулярное выражение для проверки, что строка содержит только латинские символы и цифры
     if errors is not None:
         errors = []

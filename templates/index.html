@@ -6,7 +6,7 @@
         {% if saved_locations %}
          <h2 style="color: #1d60a5;">Сохраненные локации</h2>
             <div class="container">
-                {% for location in saved_locations %}
+                {% for location in saved_locations.items %}
                 <div class="card">
                     <h2>{{ location.name }}</h2>
                     <p> {{ location.country }}, {{ location.state }}</p>
@@ -29,7 +29,7 @@
         <div style="text-align-last: center">
             <form action='/' method="get">
                 <div class="row">
-                     Pages: {% for page in range(1, total_pages +1) %}
+                     Pages: {% for page in range(1, saved_locations.pages + 1) %}
                         <button class="page_button"
                                 name="page"
                                 type="submit"
