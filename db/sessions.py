@@ -59,7 +59,7 @@ class LocationDao(AbstractDao):
             location = session.query(self._model).filter(self._model.name == name).first()
         return location
 
-    def get_all(self, user: UserInDB) -> list:
+    def get_all(self, user: UserInDB | Row[tuple[User]]) -> list:
         with self._session_factory() as session:
             user_locations = session.query(self._model).filter(self._model.user_id == user.id).all()
             return user_locations

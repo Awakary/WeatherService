@@ -200,3 +200,38 @@
     width: 150px;
 }
 
+
+
+.pagination {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+.pagination button {
+    margin: 0 5px;
+    background-color: #1468c3; /* Основной цвет кнопки */
+    color: white; /* Цвет шрифта */
+    font-size: 1.2em;
+    border: none; /* Убираем бордер */
+    padding: 10px 15px; /* Внутренние отступы */
+    border-radius: 5px; /* Скругления углов */
+    cursor: pointer; /* Указатель курсора при наведении */
+    transition: transform 0.1s, background-color 0.2s; /* Плавный переход */
+}
+
+.pagination button:hover {
+    background-color: #007bff; /* Цвет при наведении */
+}
+
+.pagination button:active {
+    transform: scale(0.9); /* Уменьшение размера кнопки */
+    background-color: #004494; /* Цвет при нажатии */
+}
+
+.pagination button:focus {
+    outline: none; /* Убираем обводку при фокусе */
+}
+
+

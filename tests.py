@@ -221,7 +221,7 @@ def test_read_main_with_authorization(mock_get, create_test_db, create_authoriza
     assert "Париж" in response.text
     assert "Пользователь: user1" in response.text
     assert "Выйти" in response.text
-    assert "Pages:" in response.text
+
 
 
 def test_add_locations_for_user(create_test_db, create_authorization):

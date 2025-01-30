@@ -5,21 +5,19 @@ from datetime import datetime, timedelta
 import jwt
 from fastapi import Request
 
-SECRET_KEY = "my_secret_key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = timedelta(minutes=180)
+from config import settings
 
 
 def create_jwt_token(data: dict) -> str:
-    expiration = datetime.utcnow() + ACCESS_TOKEN_EXPIRE_MINUTES
+    expiration = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     data.update({"exp": expiration})
-    token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+    token = jwt.encode(data, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return token
 
 
 def verify_jwt_token(token: str) -> str | None:
     try:
-        decoded_data = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         return decoded_data
     except jwt.ExpiredSignatureError:
         return 'Token is expired'
