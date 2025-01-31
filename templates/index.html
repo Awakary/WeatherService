@@ -5,15 +5,16 @@
             <div class="container">
                 {% for location in saved_locations.items %}
                 <div class="card">
-                    <h2>{{ location.name }}</h2>
-                    <p> {{ location.country }}, {{ location.state }}</p>
+
+                    <h3 > {{ location.main }}</h3>
+                    <h3>  {{ location.temp }} °C</h3>
+                    <p> Ощущается как: {{ location.feels_like }} °C</p>
+                    <p> Ветер {{ location.wind_speed }} м/с</p>
                     <div class="card__image">
                       <img src="{{ location.main | image_path }}" alt="Image">
                     </div>
-                    <p style="font-weight: bold;"> {{ location.main }}</p>
-                    <p style="font-weight: bold;">  {{ location.temp }} °C</p>
-                    <p> Ощущается как: {{ location.feels_like }} °C</p>
-                    <p> Ветер {{ location.wind_speed }} м/с</p>
+                    <p> {{ location.country }}, {{ location.state }}</p>
+                      <h3>{{ location.name }}</h3>
                     <form action='/delete_location' method="post">
                         <input name="location_id" type="hidden" id="location_id" value="{{location.location_id}}">
                         <input name="current_page" type="hidden" id="current_page" value="{{current_page}}">

@@ -1,14 +1,19 @@
+.container {
+    display: flex; /* Расположение карточек в строку */
+    gap: 20px; /* Отступ между карточками */
+    flex-wrap: wrap; /* Позволяет карточкам переходить на следующую строку при недостатке места */
+    justify-content: center; /* Центрирование карточек */
+}
+
 .card {
     box-shadow: 0 9px 16px 0 rgba(2,2,1,0.5);
     transition: 0.3s;
-    border-radius: 50px; /* 5px rounded corners */
+    border-radius: 50px; /* Радиус закругления углов карточек */
     border: 2px solid #1d60a5;
-    width: 350px;
+    width: 330px;
     min-height: 300px;
     margin: auto;
     text-align: center;
-    /*flex-direction: column; !* Размещаем элементы в колонку *!*/
-
 }
 
 /* При наведении на карточку - меняем цвет тени */
@@ -25,7 +30,7 @@
 /* Контейнер для картинки */
 .card__image {
     width: 100%;   /* устанавливаем ширину */
-    height: 220px;  /* устанавливаем высоту */
+    height: 200px;  /* устанавливаем высоту */
 
 }
 
