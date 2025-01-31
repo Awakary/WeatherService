@@ -28,4 +28,8 @@ Frontend - HTML/CSS
 
 ![изображение](https://github.com/user-attachments/assets/3c99697d-9af6-48a7-b102-b3cd875cf515)
 
+Главная страница с сохраненными локациями #
+![изображение](https://github.com/user-attachments/assets/62c60653-961a-4486-9f3d-6c2b9295bca8)
+
+
 
