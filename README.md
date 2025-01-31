@@ -2,9 +2,13 @@
 Сервис отображения погоды по найденным локациям
 
 Стек: 
+
 Backend - FastApi
+
 Базы данных - Postgres (SQLAlchemy + Alembic)
+
 Frontend - HTML/CSS
+
 Тесты - pytest
 
 Функционал приложения #
