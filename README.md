@@ -1,7 +1,7 @@
 # WeatherService
 Сервис отображения погоды по найденным локациям
 
-Стек 
+Стек: 
 Backend - FastApi
 Базы данных - Postgres (SQLAlchemy + Alembic)
 Frontend - HTML/CSS
